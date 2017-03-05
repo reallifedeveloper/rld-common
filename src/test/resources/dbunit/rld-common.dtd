@@ -1,0 +1,19 @@
+<!ELEMENT dataset (
+    message_tracker*,
+    stored_event*)>
+
+<!ELEMENT message_tracker EMPTY>
+<!ATTLIST message_tracker
+    id CDATA #REQUIRED
+    last_published_message_id CDATA #REQUIRED
+    publication_channel CDATA #REQUIRED
+>
+
+<!ELEMENT stored_event EMPTY>
+<!ATTLIST stored_event
+    stored_event_id CDATA #REQUIRED
+    event_body CDATA #REQUIRED
+    event_type CDATA #REQUIRED
+    occurred_on CDATA #REQUIRED
+    version CDATA #REQUIRED
+>

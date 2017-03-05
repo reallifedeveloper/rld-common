@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "rld-common.dtd">
+<dataset>
+
+    <message_tracker id="1" last_published_message_id="0" publication_channel="foo" />
+    <message_tracker id="2" last_published_message_id="42" publication_channel="bar" />
+
+</dataset>
