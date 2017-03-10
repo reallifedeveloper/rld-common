@@ -1,5 +1,6 @@
 package com.reallifedeveloper.common.infrastructure.persistence;
 
+import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import javax.sql.DataSource;
 
 import org.dbunit.dataset.datatype.IDataTypeFactory;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ import com.reallifedeveloper.tools.test.database.dbunit.AbstractDbTest;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:META-INF/spring-context-rld-common-test.xml" })
-public class JpaStoredEventRepositoryTest extends AbstractDbTest {
+public class JpaStoredEventRepositoryIT extends AbstractDbTest {
 
     @Autowired
     private StoredEventRepository repository;
@@ -31,8 +33,17 @@ public class JpaStoredEventRepositoryTest extends AbstractDbTest {
     @Autowired
     private IDataTypeFactory dataTypeFactory;
 
-    public JpaStoredEventRepositoryTest() {
+    public JpaStoredEventRepositoryIT() {
         super(null, "/dbunit/rld-common.dtd", "/dbunit/stored_event.xml");
+    }
+
+    @Before
+    public void init() throws Exception {
+        // In dbunit/stored_event.xml we insert 10 events, so we want the next event ID to be 11.
+        // This works for test databases using sequences for primary key generation, such as HSQLDB.
+        try (Statement statement = ds.getConnection().createStatement()) {
+            statement.executeUpdate("ALTER SEQUENCE hibernate_sequence RESTART WITH 11");
+        }
     }
 
     @Test

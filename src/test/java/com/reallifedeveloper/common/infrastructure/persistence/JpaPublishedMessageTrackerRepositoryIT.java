@@ -16,7 +16,7 @@ import com.reallifedeveloper.tools.test.database.dbunit.AbstractDbTest;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:META-INF/spring-context-rld-common-test.xml" })
-public class JpaPublishedMessageTrackerRepositoryTest extends AbstractDbTest {
+public class JpaPublishedMessageTrackerRepositoryIT extends AbstractDbTest {
 
     @Autowired
     private PublishedMessageTrackerRepository repository;
@@ -27,7 +27,7 @@ public class JpaPublishedMessageTrackerRepositoryTest extends AbstractDbTest {
     @Autowired
     private IDataTypeFactory dataTypeFactory;
 
-    public JpaPublishedMessageTrackerRepositoryTest() {
+    public JpaPublishedMessageTrackerRepositoryIT() {
         super(null, "/dbunit/rld-common.dtd", "/dbunit/message_tracker.xml");
     }
 

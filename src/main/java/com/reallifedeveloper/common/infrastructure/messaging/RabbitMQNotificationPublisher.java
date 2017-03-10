@@ -2,6 +2,7 @@ package com.reallifedeveloper.common.infrastructure.messaging;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,6 +163,8 @@ public class RabbitMQNotificationPublisher implements NotificationPublisher {
                     String message = objectSerializer.serialize(notification);
                     channel.basicPublish(publicationChannel, "", null, message.getBytes("UTF-8"));
                 }
+            } catch (TimeoutException e) {
+                throw new IOException("Timeout occurred", e);
             } finally {
                 close(channel);
                 close(connection);
@@ -173,7 +176,7 @@ public class RabbitMQNotificationPublisher implements NotificationPublisher {
         if (channel != null) {
             try {
                 channel.close();
-            } catch (IOException e) {
+            } catch (IOException | TimeoutException e) {
                 LOG.warn("Failed to close channel", e);
             }
         }

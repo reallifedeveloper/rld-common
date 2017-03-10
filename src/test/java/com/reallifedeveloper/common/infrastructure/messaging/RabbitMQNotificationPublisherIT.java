@@ -6,15 +6,19 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 
 import com.reallifedeveloper.common.application.eventstore.EventStore;
 import com.reallifedeveloper.common.application.eventstore.InMemoryStoredEventRepository;
@@ -40,6 +44,7 @@ public class RabbitMQNotificationPublisherIT {
     private NotificationFactory notificationFactory = NotificationFactory.instance(eventStore);
 
     @Test
+    @Ignore("Activate this test if you have RabbitMQ running on your machine")
     public void singleNotificationSingleListener() throws Exception {
         QueueListener listener = new QueueListener("listener1");
         listener.start();
@@ -58,6 +63,7 @@ public class RabbitMQNotificationPublisherIT {
     }
 
     @Test
+    @Ignore("Activate this test if you have RabbitMQ running on your machine")
     public void multipleNotificationsMultipleListeners() throws Exception {
         QueueListener listener1 = new QueueListener("listener1");
         listener1.start();
@@ -115,12 +121,10 @@ public class RabbitMQNotificationPublisherIT {
 
     private static class QueueListener extends Thread {
 
-        private String name;
-        private QueueingConsumer consumer;
+        private DefaultConsumer consumer;
         private List<String> messages = new ArrayList<>();
 
-        QueueListener(String name) throws IOException {
-            this.name = name;
+        QueueListener(String name) throws IOException, TimeoutException {
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost("localhost");
             Connection connection = factory.newConnection();
@@ -128,23 +132,16 @@ public class RabbitMQNotificationPublisherIT {
             channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
             String queueName = channel.queueDeclare().getQueue();
             channel.queueBind(queueName, EXCHANGE_NAME, "");
-            consumer = new QueueingConsumer(channel);
-            channel.basicConsume(queueName, true, consumer);
-        }
-
-        @Override
-        public void run() {
-            try {
-                while (true) {
-                    LOG.debug(name + ": Waiting for messages");
-                    QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-                    String message = new String(delivery.getBody(), "UTF-8");
-                    LOG.debug(name + ": Message received: " + message);
+            consumer = new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
+                        byte[] body) throws IOException {
+                    String message = new String(body, "UTF-8");
+                    LOG.debug(name + ": Message received: + " + message);
                     messages.add(message);
                 }
-            } catch (Exception e) {
-                LOG.error(name + ": Unexpected problem in QueueListener", e);
-            }
+            };
+            channel.basicConsume(queueName, true, consumer);
         }
 
         public synchronized List<String> messages() {
