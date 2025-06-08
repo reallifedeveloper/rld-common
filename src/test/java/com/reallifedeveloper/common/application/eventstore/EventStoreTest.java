@@ -1,147 +1,142 @@
 package com.reallifedeveloper.common.application.eventstore;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.reallifedeveloper.common.domain.ObjectSerializer;
 import com.reallifedeveloper.common.domain.event.TestEvent;
 import com.reallifedeveloper.common.infrastructure.GsonObjectSerializer;
+import com.reallifedeveloper.common.test.TestUtil;
 
 public class EventStoreTest {
 
-    private ObjectSerializer<String> eventSerializer = new GsonObjectSerializer();
-    private StoredEventRepository eventRepository = new InMemoryStoredEventRepository();
-    private EventStore eventStore = new EventStore(eventSerializer, eventRepository);
+    private final ObjectSerializer<String> eventSerializer = new GsonObjectSerializer();
+    private final StoredEventRepository eventRepository = new InMemoryStoredEventRepository();
+    private final EventStore eventStore = new EventStore(eventSerializer, eventRepository);
 
     @Test
     public void addOneEvent() throws Exception {
-        TestEvent event = new TestEvent(42, "foo", new Date(), 2);
+        TestEvent event = new TestEvent(42, "foo", ZonedDateTime.now(), 2);
         StoredEvent storedEvent = eventStore.add(event);
-        Assert.assertEquals("Stored event has wrong ID: ", 1, storedEvent.id().longValue());
-        Assert.assertEquals("Stored event has wrong type: ", TestEvent.class.getName(), storedEvent.eventType());
-        Assert.assertEquals("Stored event timestamp is wrong: ", event.occurredOn(), storedEvent.occurredOn());
-        Assert.assertEquals("Stored event version is wrong: ", event.version(), storedEvent.version().intValue());
+        Assertions.assertEquals(1, storedEvent.id().longValue(), "Stored event has wrong ID");
+        Assertions.assertEquals(TestEvent.class.getName(), storedEvent.eventType(), "Stored event has wrong type");
+        Assertions.assertEquals(event.eventOccurredOn(), storedEvent.occurredOn(), "Stored event timestamp is wrong");
+        Assertions.assertEquals(event.eventVersion(), storedEvent.version().intValue(), "Stored event version is wrong");
+
         TestEvent retrievedEvent = eventSerializer.deserialize(storedEvent.eventBody(), TestEvent.class);
-        Assert.assertEquals("Retrieved event has wrong ID: ", event.id(), retrievedEvent.id());
-        Assert.assertEquals("Retrieved event has wrong name: ", event.name(), retrievedEvent.name());
-        Assert.assertEquals("Retrieved event timestamp is wrong: ", event.occurredOn(), retrievedEvent.occurredOn());
-        Assert.assertEquals("Retrieved event version is wrong: ", event.version(), retrievedEvent.version());
+        Assertions.assertEquals(event.id(), retrievedEvent.id(), "Retrieved event has wrong ID");
+        Assertions.assertEquals(event.name(), retrievedEvent.name(), "Retrieved event has wrong name");
+        TestUtil.assertEquals(event.eventOccurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
+        Assertions.assertEquals(event.eventVersion(), retrievedEvent.eventVersion(), "Retrieved event version is wrong");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void addNullEvent() {
-        eventStore.add(null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> eventStore.add(null));
     }
 
     @Test
     public void allEventsSinceWithNoEvents() {
         List<StoredEvent> storedEvents = eventStore.allEventsSince(0);
-        Assert.assertEquals("There should be no stored events: ", 0, storedEvents.size());
-        Assert.assertEquals("Wrong last stored event ID: ", 0, eventStore.lastStoredEventId());
+        Assertions.assertEquals(0, storedEvents.size(), "There should be no stored events");
+        Assertions.assertEquals(0, eventStore.lastStoredEventId(), "Wrong last stored event ID");
     }
 
     @Test
     public void allEventsSince() {
-        Date startDate = new Date();
+        ZonedDateTime start = ZonedDateTime.now();
         final int numEventsTotal = 10;
         int eventVersion = 3;
         for (int i = 0; i < numEventsTotal; i++) {
-            // StoredEvents get IDs 1, 2, 3, and so on since we use an InMemoryStoredEventRepository.
-            eventStore.add(new TestEvent(i, "foo" + i, new Date(startDate.getTime() + i), eventVersion));
-            Assert.assertEquals("Wrong last stored event ID: ", i + 1, eventStore.lastStoredEventId());
+            eventStore.add(new TestEvent(i, "foo" + i, start.plusSeconds(i), eventVersion));
+            Assertions.assertEquals(i + 1, eventStore.lastStoredEventId(), "Wrong last stored event ID");
         }
+
         final int firstEventIdToRetrieve = 5;
         final int numEventsToRetrieve = numEventsTotal - firstEventIdToRetrieve + 1;
         List<StoredEvent> storedEvents = eventStore.allEventsSince(firstEventIdToRetrieve - 1);
-        Assert.assertEquals("Wrong number of stored events found: ", numEventsToRetrieve, storedEvents.size());
+        Assertions.assertEquals(numEventsToRetrieve, storedEvents.size(), "Wrong number of stored events found");
+
         for (int i = 0; i < numEventsToRetrieve; i++) {
             StoredEvent storedEvent = storedEvents.get(i);
             int expectedStoredEventId = i + firstEventIdToRetrieve;
-            Assert.assertEquals("Stored event has wrong ID: ", expectedStoredEventId, storedEvent.id().longValue());
-            Assert.assertEquals("Stored event timestamp is wrong: ",
-                    startDate.getTime() + expectedStoredEventId - 1, storedEvent.occurredOn().getTime());
-            Assert.assertEquals("Stored event version is wrong: ", eventVersion, storedEvent.version().intValue());
+            Assertions.assertEquals(expectedStoredEventId, storedEvent.id().longValue(), "Stored event has wrong ID");
+            Assertions.assertEquals(start.plusSeconds(expectedStoredEventId - 1).toInstant(), storedEvent.occurredOn().toInstant(),
+             "Stored event timestamp is wrong");
+            Assertions.assertEquals(eventVersion, storedEvent.version().intValue(), "Stored event version is wrong");
+
             TestEvent retrievedEvent = eventStore.toDomainEvent(storedEvent);
-            Assert.assertEquals("Retrieved event has wrong ID: ", expectedStoredEventId - 1, retrievedEvent.id());
-            Assert.assertEquals("Retrieved event has wrong name: ",
-                    "foo" + (expectedStoredEventId - 1), retrievedEvent.name());
-            Assert.assertEquals("Retrieved event timestamp is wrong: ", storedEvent.occurredOn(),
-                    retrievedEvent.occurredOn());
-            Assert.assertEquals("Retrieved event version is wrong: ", storedEvent.version().intValue(),
-                    retrievedEvent.version());
+            Assertions.assertEquals(expectedStoredEventId - 1, retrievedEvent.id(), "Retrieved event has wrong ID");
+            Assertions.assertEquals("foo" + (expectedStoredEventId - 1), retrievedEvent.name(), "Retrieved event has wrong name");
+            TestUtil.assertEquals(storedEvent.occurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
+            Assertions.assertEquals(storedEvent.version().intValue(), retrievedEvent.eventVersion(), "Retrieved event version is wrong");
         }
     }
 
     @Test
     public void allEventsBetween() {
-        Date startDate = new Date();
+        ZonedDateTime start = ZonedDateTime.now();
         final int numEventsTotal = 10;
         int eventVersion = 3;
         for (int i = 0; i < numEventsTotal; i++) {
-            // StoredEvents get IDs 1, 2, 3, and so on since we use an InMemoryStoredEventRepository.
-            eventStore.add(new TestEvent(i, "foo" + i, new Date(startDate.getTime() + i), eventVersion));
+            eventStore.add(new TestEvent(i, "foo" + i, start.plusSeconds(i), eventVersion));
         }
+
         final int firstEventIdToRetrieve = 5;
         final int lastEventIdToRetrieve = 7;
         final int numEventsToRetrieve = lastEventIdToRetrieve - firstEventIdToRetrieve + 1;
         List<StoredEvent> storedEvents = eventStore.allEventsBetween(firstEventIdToRetrieve, lastEventIdToRetrieve);
-        Assert.assertEquals("Wrong number of stored events found: ", numEventsToRetrieve, storedEvents.size());
+        Assertions.assertEquals(numEventsToRetrieve, storedEvents.size(), "Wrong number of stored events found");
+
         for (int i = 0; i < numEventsToRetrieve; i++) {
             StoredEvent storedEvent = storedEvents.get(i);
             int expectedStoredEventId = i + firstEventIdToRetrieve;
-            Assert.assertEquals("Stored event has wrong ID: ", expectedStoredEventId, storedEvent.id().longValue());
-            Assert.assertEquals("Stored event timestamp is wrong: ",
-                    startDate.getTime() + expectedStoredEventId - 1, storedEvent.occurredOn().getTime());
-            Assert.assertEquals("Stored event version is wrong: ", eventVersion, storedEvent.version().intValue());
+            Assertions.assertEquals(expectedStoredEventId, storedEvent.id().longValue(), "Stored event has wrong ID");
+            Assertions.assertEquals(start.plusSeconds(expectedStoredEventId - 1).toInstant(), storedEvent.occurredOn().toInstant(),
+             "Stored event timestamp is wrong");
+            Assertions.assertEquals(eventVersion, storedEvent.version().intValue(), "Stored event version is wrong");
+
             TestEvent retrievedEvent = eventStore.toDomainEvent(storedEvent);
-            Assert.assertEquals("Retrieved event has wrong ID: ", expectedStoredEventId - 1, retrievedEvent.id());
-            Assert.assertEquals("Retrieved event has wrong name: ",
-                    "foo" + (expectedStoredEventId - 1), retrievedEvent.name());
-            Assert.assertEquals("Retrieved event timestamp is wrong: ", storedEvent.occurredOn(),
-                    retrievedEvent.occurredOn());
-            Assert.assertEquals("Retrieved event version is wrong: ", storedEvent.version().intValue(),
-                    retrievedEvent.version());
+            Assertions.assertEquals(expectedStoredEventId - 1, retrievedEvent.id(), "Retrieved event has wrong ID");
+            Assertions.assertEquals("foo" + (expectedStoredEventId - 1), retrievedEvent.name(), "Retrieved event has wrong name");
+            TestUtil.assertEquals(storedEvent.occurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
+            Assertions.assertEquals(storedEvent.version().intValue(), retrievedEvent.eventVersion(), "Retrieved event version is wrong");
         }
     }
 
     @Test
     public void toDomainEvent() throws Exception {
-        TestEvent event = new TestEvent(42, "foo", new Date(), 2);
+        TestEvent event = new TestEvent(42, "foo", ZonedDateTime.now(), 2);
         StoredEvent storedEvent = eventStore.add(event);
         TestEvent retrievedEvent = eventStore.toDomainEvent(storedEvent);
-        Assert.assertEquals("Retrieved event has wrong ID: ", event.id(), retrievedEvent.id());
-        Assert.assertEquals("Retrieved event has wrong name: ", event.name(), retrievedEvent.name());
-        Assert.assertEquals("Retrieved event timestamp is wrong: ", event.occurredOn(), retrievedEvent.occurredOn());
-        Assert.assertEquals("Retrieved event has wrong version: ", event.version(), retrievedEvent.version());
-    }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void toDomainEventNull() {
-        eventStore.toDomainEvent(null);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void toDomainEventUnknownClass() {
-        StoredEvent storedEvent = new StoredEvent("foo", "bar", new Date(), 1);
-        eventStore.toDomainEvent(storedEvent);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructorNullSerializer() {
-        new EventStore(null, eventRepository);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructorNullRepository() {
-        new EventStore(eventSerializer, null);
+        Assertions.assertEquals(event.id(), retrievedEvent.id(), "Retrieved event has wrong ID");
+        Assertions.assertEquals(event.name(), retrievedEvent.name(), "Retrieved event has wrong name");
+        TestUtil.assertEquals(event.eventOccurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
+        Assertions.assertEquals(event.eventVersion(), retrievedEvent.eventVersion(), "Retrieved event has wrong version");
     }
 
     @Test
-    public void constructorNoArguments() {
-        // Make sure we don't get an exception
-        new EventStore();
+    public void toDomainEventNull() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> eventStore.toDomainEvent(null));
+    }
+
+    @Test
+    public void toDomainEventUnknownClass() {
+        StoredEvent storedEvent = new StoredEvent("foo", "bar", ZonedDateTime.now(), 1);
+        Assertions.assertThrows(IllegalStateException.class, () -> eventStore.toDomainEvent(storedEvent));
+    }
+
+    @Test
+    public void constructorNullSerializer() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new EventStore(null, eventRepository));
+    }
+
+    @Test
+    public void constructorNullRepository() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new EventStore(eventSerializer, null));
     }
 }

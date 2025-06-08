@@ -1,6 +1,11 @@
 package com.reallifedeveloper.common.domain.event;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+
+import org.junit.jupiter.api.Assertions;
+
+import com.reallifedeveloper.common.test.TestUtil;
 
 public class TestEvent extends AbstractDomainEvent {
 
@@ -9,20 +14,20 @@ public class TestEvent extends AbstractDomainEvent {
     private int id;
     private String name;
 
-    public TestEvent(int id, String name, Date occurredOn, int version) {
+    public TestEvent(int id, String name, ZonedDateTime occurredOn, int version) {
         super(occurredOn, version);
         this.id = id;
         this.name = name;
     }
 
-    public TestEvent(int id, String name, Date occurredOn) {
+    public TestEvent(int id, String name, ZonedDateTime occurredOn) {
         super(occurredOn);
         this.id = id;
         this.name = name;
     }
 
     public TestEvent(int id, String name) {
-        super(new Date());
+        super(ZonedDateTime.now());
         this.id = id;
         this.name = name;
     }
@@ -37,11 +42,7 @@ public class TestEvent extends AbstractDomainEvent {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + id;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
+        return Objects.hash(id, name);
     }
 
     @Override
@@ -49,28 +50,27 @@ public class TestEvent extends AbstractDomainEvent {
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
-            return false;
-        }
         if (getClass() != obj.getClass()) {
             return false;
         }
         TestEvent other = (TestEvent) obj;
-        if (id != other.id) {
-            return false;
-        }
-        if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        return true;
+        // We do not call super.equals(), instead we compare eventOccurredOn and eventVersion here in order to round eventOccurredOn to
+        // milliseconds and to use the time-zone offset instead of time-zone name when comparing. This way, we can use assertEquals
+        // for events that have passed through processing that rounds to milliseconds.
+        return TestUtil.format(eventOccurredOn()).equals(TestUtil.format(other.eventOccurredOn()))
+                && Objects.equals(eventVersion(), other.eventVersion()) && Objects.equals(id, other.id) && Objects.equals(name, other.name);
     }
 
     @Override
     public String toString() {
-        return "TestEvent{id=" + id() + ", name=" + name() + ", occurredOn=" + occurredOn() + "}";
+        return "TestEvent{id=" + id() + ", name=" + name() + ", eventOccurredOn=" + eventOccurredOn() + ", eventVerion=" + eventVersion()
+                + "}";
+    }
+
+    public static void assertTestEventsEqual(TestEvent expected, TestEvent actual) {
+        Assertions.assertEquals(expected.id(), actual.id(), "Event has wrong ID: ");
+        Assertions.assertEquals(expected.name(), actual.name(), "Event has wrong name: ");
+        TestUtil.assertEquals(expected.eventOccurredOn(), actual.eventOccurredOn(), "Event has wrong occurredOn: ");
+        Assertions.assertEquals(expected.eventVersion(), actual.eventVersion(), "Event has wrong version: ");
     }
 }

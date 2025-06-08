@@ -3,8 +3,10 @@ package com.reallifedeveloper.common.application.notification;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.reallifedeveloper.common.domain.event.TestEvent;
 
 public class NotificationLogTest {
 
@@ -15,48 +17,55 @@ public class NotificationLogTest {
 
     @Test
     public void constructor() {
-        NotificationLog notificationLog = new NotificationLog(currentNotificationLogId, nextNotificationLogId,
-                previousNotificationLogId, notifications, true);
-        Assert.assertEquals("Wrong current notification log ID: ", currentNotificationLogId,
-                notificationLog.currentNotificationLogId());
-        Assert.assertEquals("Wrong next notification log ID: ", nextNotificationLogId,
-                notificationLog.nextNotificationLogId());
-        Assert.assertEquals("Wrong previous notification log ID: ", previousNotificationLogId,
-                notificationLog.previousNotificationLogId());
-        Assert.assertEquals("Wrong notifications: ", notifications, notificationLog.notifications());
-        Assert.assertTrue("isArchived should be true", notificationLog.isArchived());
+        NotificationLog notificationLog = new NotificationLog(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId,
+                notifications, true);
+        Assertions.assertEquals(currentNotificationLogId, notificationLog.current(), "Wrong current notification log ID");
+        Assertions.assertEquals(nextNotificationLogId, notificationLog.next().get(), "Wrong next notification log ID");
+        Assertions.assertEquals(previousNotificationLogId, notificationLog.previous().get(), "Wrong previous notification log ID");
+        Assertions.assertEquals(notifications, notificationLog.notifications(), "Wrong notifications");
+        Assertions.assertTrue(notificationLog.isArchived(), "isArchived should be true");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullCurrentNotificationLogId() {
-        new NotificationLog(null, nextNotificationLogId, previousNotificationLogId, notifications, true);
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> new NotificationLog(null, nextNotificationLogId, previousNotificationLogId, notifications, true));
     }
 
     @Test
     public void constructorNullNextNotificationLogId() {
-        // There should be no exception
+        // No exception should be thrown
         new NotificationLog(currentNotificationLogId, null, previousNotificationLogId, notifications, true);
     }
 
     @Test
     public void constructorNullPreviousNotificationLogId() {
-        // There should be no exception
+        // No exception should be thrown
         new NotificationLog(currentNotificationLogId, nextNotificationLogId, null, notifications, true);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullNotifications() {
-        new NotificationLog(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId, null, true);
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> new NotificationLog(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId, null, true));
+    }
+
+    @Test
+    public void constructorDefensiveCopyOfNotifications() {
+        notifications.add(Notification.create(new TestEvent(42, "foo"), 4711L));
+        NotificationLog notificationLog = new NotificationLog(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId,
+                notifications, false);
+        notifications.clear();
+        Assertions.assertFalse(notificationLog.notifications().isEmpty(), "Notifications in NotificationLog should not be empty");
     }
 
     @Test
     public void testToString() {
-        NotificationLog notificationLog = new NotificationLog(currentNotificationLogId, nextNotificationLogId,
-                previousNotificationLogId, notifications, true);
-        Assert.assertEquals("NotificationLog{current=" + currentNotificationLogId
-                + ", next=" + nextNotificationLogId
-                + ", previous=" + previousNotificationLogId
-                + ", notifications=[]"
-                + "}", notificationLog.toString());
+        NotificationLog notificationLog = new NotificationLog(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId,
+                notifications, true);
+        Assertions.assertEquals(
+                "NotificationLog[current=%s, nullableNext=%s, nullablePrevious=%s, notifications=[], isArchived=true]"
+                        .formatted(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId),
+                notificationLog.toString(), "Incorrect toString representation");
     }
 }

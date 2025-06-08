@@ -1,9 +1,9 @@
 package com.reallifedeveloper.common.application.eventstore;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class StoredEventTest {
 
@@ -11,45 +11,39 @@ public class StoredEventTest {
     public void constructor() {
         String eventType = "foo";
         String eventBody = "bar";
-        Date eventOccurredOn = new Date();
+        ZonedDateTime eventOccurredOn = ZonedDateTime.now();
         int eventVersion = 1;
         StoredEvent storedEvent = new StoredEvent(eventType, eventBody, eventOccurredOn, eventVersion);
-        Assert.assertNull("Stored event should have null ID", storedEvent.id());
-        Assert.assertEquals("Stored event has wrong type: ", eventType, storedEvent.eventType());
-        Assert.assertEquals("Stored event has wrong body: ", eventBody, storedEvent.eventBody());
-        Assert.assertEquals("Stored event timestamp is wrong: ", eventOccurredOn, storedEvent.occurredOn());
-        Assert.assertEquals("Stored event version is wrong: ", eventVersion, storedEvent.version().intValue());
+
+        Assertions.assertNull(storedEvent.id(), "Stored event should have null ID");
+        Assertions.assertEquals(eventType, storedEvent.eventType(), "Stored event has wrong type");
+        Assertions.assertEquals(eventBody, storedEvent.eventBody(), "Stored event has wrong body");
+        Assertions.assertEquals(eventOccurredOn, storedEvent.occurredOn(), "Stored event timestamp is wrong");
+        Assertions.assertEquals(eventVersion, storedEvent.version().intValue(), "Stored event version is wrong");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullEventType() {
-        new StoredEvent(null, "bar", new Date(), 1);
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new StoredEvent(null, "bar", ZonedDateTime.now(), 1),
+            "Expected constructor to throw IllegalArgumentException on null eventType"
+        );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullEventBody() {
-        new StoredEvent("foo", null, new Date(), 1);
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new StoredEvent("foo", null, ZonedDateTime.now(), 1),
+            "Expected constructor to throw IllegalArgumentException on null eventBody"
+        );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullOccurredOn() {
-        new StoredEvent("foo", "bar", null, 1);
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new StoredEvent("foo", "bar", null, 1),
+            "Expected constructor to throw IllegalArgumentException on null occurredOn"
+        );
     }
 
-    @Test
-    public void defensiveCopyOfOccurredOnInConstructor() {
-        Date occurredOn = new Date();
-        long occurredOnMillis = occurredOn.getTime();
-        StoredEvent storedEvent = new StoredEvent("foo", "bar", occurredOn, 1);
-        occurredOn.setTime(0);
-        Assert.assertEquals("Stored event timestamp is wrong: ", occurredOnMillis, storedEvent.occurredOn().getTime());
-    }
-
-    @Test
-    public void defensiveCopyOfOccurredOnInGetter() {
-        Date occurredOn = new Date();
-        StoredEvent storedEvent = new StoredEvent("foo", "bar", occurredOn, 1);
-        storedEvent.occurredOn().setTime(0);
-        Assert.assertEquals("Stored event timestamp is wrong: ", occurredOn, storedEvent.occurredOn());
-    }
 }

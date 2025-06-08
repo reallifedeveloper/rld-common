@@ -1,99 +1,102 @@
 package com.reallifedeveloper.common.infrastructure.persistence;
 
-import java.util.Date;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import java.time.Clock;
+import java.time.ZonedDateTime;
 
-import com.reallifedeveloper.common.domain.TestTimeService;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:META-INF/spring-context-rld-common-registry-test.xml" })
+import com.reallifedeveloper.common.domain.ClockTimeService;
+import com.reallifedeveloper.common.domain.registry.CommonDomainRegistry;
+import com.reallifedeveloper.common.domain.registry.CommonDomainRegistryTest;
+
 public class TimestampedJpaEntityTest {
 
-    @Autowired
-    private TestTimeService timeService;
+    private final ZonedDateTime testDateTime = ZonedDateTime.now();
 
-    private Date testDate = new Date();
+    @BeforeAll
+    public static void initClass() {
+        CommonDomainRegistryTest.initCommonDomainRegistry();
+    }
 
-    @Before
+    @BeforeEach
     public void init() {
-        timeService.setDates(testDate);
+        ClockTimeService timeService = (ClockTimeService) CommonDomainRegistry.timeService();
+        timeService.setClock(Clock.fixed(testDateTime.toInstant(), testDateTime.getZone()));
     }
 
     @Test
     public void constructor() {
-        TimestampedJpaEntity entity = new TimestampedJpaEntity();
-        Assert.assertNull("ID should be null", entity.id());
-        Assert.assertNull("Created date should be null", entity.created());
-        Assert.assertNull("Updated date should be null", entity.updated());
+        TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity();
+        assertFalse(entity.id().isPresent(), "ID should be not be present");
+        assertFalse(entity.created().isPresent(), "Created timestamp should not be present");
+        assertFalse(entity.updated().isPresent(), "Updated timestamp should not be present");
     }
 
     @Test
     public void constructorId() {
         long id = 42;
-        TimestampedJpaEntity entity = new TimestampedJpaEntity(id);
-        Assert.assertEquals("Wrong ID: ", id, entity.id().longValue());
-        Assert.assertEquals("Wrong created date: ", testDate, entity.created());
-        Assert.assertEquals("Wrong updated date: ", testDate, entity.updated());
+        TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity(id);
+        assertEquals(id, entity.id().get().longValue(), "Wrong ID");
+        assertEquals(testDateTime, entity.created().get(), "Wrong created date");
+        assertEquals(testDateTime, entity.updated().get(), "Wrong updated date");
     }
 
     @Test
     public void constructorIdCreatedUpdated() {
         long id = 42;
-        Date created = new Date();
-        Date updated = new Date(created.getTime() + 1);
-        TimestampedJpaEntity entity = new TimestampedJpaEntity(id, created, updated);
-        Assert.assertEquals("Wrong ID: ", id, entity.id().longValue());
-        Assert.assertEquals("Wrong created date: ", created, entity.created());
-        Assert.assertEquals("Wrong updated date: ", updated, entity.updated());
+        ZonedDateTime created = ZonedDateTime.now();
+        ZonedDateTime updated = created.plusSeconds(1);
+        TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity(id, created, updated);
+        assertEquals(id, entity.id().get().longValue(), "Wrong ID");
+        assertEquals(created, entity.created().get(), "Wrong created date");
+        assertEquals(updated, entity.updated().get(), "Wrong updated date");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorCreatedNull() {
-        long id = 42;
-        Date updated = new Date();
-        new TimestampedJpaEntity(id, null, updated);
+        assertThrows(IllegalArgumentException.class, () -> new TestTimestampedJpaEntity(42L, null, ZonedDateTime.now()),
+                "Expected IllegalArgumentException for null created date");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorUpdatedNull() {
-        long id = 42;
-        Date created = new Date();
-        new TimestampedJpaEntity(id, created, null);
+        assertThrows(IllegalArgumentException.class, () -> new TestTimestampedJpaEntity(42L, ZonedDateTime.now(), null),
+                "Expected IllegalArgumentException for null updated date");
     }
 
     @Test
     public void setUpdated() {
-        Date updated = new Date();
-        TimestampedJpaEntity entity = new TimestampedJpaEntity();
-        Assert.assertNull("Updated date should be null", entity.updated());
+        ZonedDateTime updated = ZonedDateTime.now();
+        TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity();
+        assertFalse(entity.updated().isPresent(), "Updated timestamp should not be present");
         entity.setUpdated(updated);
-        Assert.assertEquals("Wrong updated date: ", updated, entity.updated());
+        assertEquals(updated, entity.updated().get(), "Wrong updated date");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setUpdatedNull() {
-        TimestampedJpaEntity entity = new TimestampedJpaEntity();
-        entity.setUpdated(null);
+        TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity();
+        assertThrows(IllegalArgumentException.class, () -> entity.setUpdated(null),
+                "Expected IllegalArgumentException for setting null updated date");
     }
 
-    private static class TimestampedJpaEntity extends AbstractTimestampedJpaEntity<Long> {
+    private static class TestTimestampedJpaEntity extends TimestampedJpaEntity<Long> {
 
-        TimestampedJpaEntity() {
+        TestTimestampedJpaEntity() {
             super();
         }
 
-        TimestampedJpaEntity(Long id) {
+        TestTimestampedJpaEntity(Long id) {
             super(id);
         }
 
-        TimestampedJpaEntity(Long id, Date created, Date updated) {
+        TestTimestampedJpaEntity(Long id, ZonedDateTime created, ZonedDateTime updated) {
             super(id, created, updated);
         }
     }

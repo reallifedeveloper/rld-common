@@ -1,5 +1,5 @@
 /**
- * Concrete implementations of interfaces in the <code>com.reallifedeveloper.common</code> package.
+ * Concrete implementations of interfaces in the {@code com.reallifedeveloper.common} package.
  *
  * @author RealLifeDeveloper
  */

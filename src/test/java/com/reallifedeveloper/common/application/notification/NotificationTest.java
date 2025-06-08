@@ -1,88 +1,83 @@
 package com.reallifedeveloper.common.application.notification;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.reallifedeveloper.common.domain.event.DomainEvent;
 
 public class NotificationTest {
 
     @Test
-    public void constructor() {
-        Date occurredOn = new Date();
+    public void create() {
+        ZonedDateTime occurredOn = ZonedDateTime.now();
         NullableTestEvent event = new NullableTestEvent(occurredOn, 1);
         long storedEventId = 42L;
-        Notification notification = new Notification(event, storedEventId);
-        Assert.assertEquals("Wrong event type: ", NullableTestEvent.class.getName(), notification.eventType());
-        Assert.assertEquals("Wrong stored event ID: ", storedEventId, notification.storedEventId());
-        Assert.assertEquals("Wrong occurredOn timestamp: ", occurredOn, notification.occurredOn());
-        Assert.assertEquals("Wrong event: ", event, notification.event());
+        Notification notification = Notification.create(event, storedEventId);
+        Assertions.assertEquals(NullableTestEvent.class.getName(), notification.eventType(), "Wrong event type");
+        Assertions.assertEquals(storedEventId, notification.storedEventId().longValue(), "Wrong stored event ID");
+        Assertions.assertEquals(occurredOn, notification.occurredOn(), "Wrong occurredOn timestamp");
+        Assertions.assertEquals(event, notification.event(), "Wrong event");
     }
+
     @Test
-    public void constructorEventWithNullOccurredOn() {
+    public void createEventWithNullOccurredOn() {
         NullableTestEvent event = new NullableTestEvent(null, 1);
-        Notification notification = new Notification(event, 42L);
-        Assert.assertNull("occurredOn should be null", notification.occurredOn());
+        Notification notification = Notification.create(event, 42L);
+        Assertions.assertNull(notification.occurredOn(), "occurredOn should be null");
     }
 
     @Test
-    public void defensiveCopyOfOccurredOnInConstructor() {
-        Date occurredOn = new Date();
-        long occurredOnMillis = occurredOn.getTime();
-        NullableTestEvent event = new NullableTestEvent(occurredOn, 1);
-        Notification notification = new Notification(event, 42L);
-        occurredOn.setTime(0);
-        Assert.assertEquals("Wrong occuredOn timestamp: ", occurredOnMillis, notification.occurredOn().getTime());
+    public void createNullEvent() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Notification.create(null, 42L));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void constructorNullEvent() {
-        new Notification(null, 42L);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructorNullStoredEventId() {
-        new Notification(new NullableTestEvent(new Date(), 1), null);
+    @Test
+    public void createNullStoredEventId() {
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+            Notification.create(new NullableTestEvent(ZonedDateTime.now(), 1), null)
+        );
     }
 
     @Test
     public void testToString() {
-        Date occurredOn = new Date();
+        ZonedDateTime occurredOn = ZonedDateTime.now();
         int version = 1;
         NullableTestEvent event = new NullableTestEvent(occurredOn, version);
         long storedEventId = 42L;
-        Notification notification = new Notification(event, storedEventId);
-        Assert.assertEquals("Wrong result of toString: ", "Notification{eventType=" + NullableTestEvent.class.getName()
-                + ", storedEventId=" + storedEventId + ", occurredOn=" + occurredOn
-                + ", event=NullableTestEvent{occurredOn=" + occurredOn + ", version=" + version + "}}",
-                notification.toString());
+        Notification notification = Notification.create(event, storedEventId);
+        Assertions.assertEquals(
+            "Notification[eventType=" + NullableTestEvent.class.getName() + ", storedEventId=" + storedEventId
+            + ", occurredOn=" + occurredOn + ", event=NullableTestEvent{occurredOn=" + occurredOn + ", version=" + version + "}]",
+            notification.toString(),
+            "Wrong result of toString"
+        );
     }
 
     /**
-     * An implementation of {@link DomainEvent} that allows <code>null</code> for the <code>occurredOn</code>
+     * An implementation of {@link DomainEvent} that allows {@code null} for the {@code occurredOn}
      * timestamp.
      */
     private static class NullableTestEvent implements DomainEvent {
 
         private static final long serialVersionUID = 1L;
 
-        private Date occurredOn;
+        private ZonedDateTime occurredOn;
         private int version;
 
-        NullableTestEvent(Date occurredOn, int version) {
+        NullableTestEvent(ZonedDateTime occurredOn, int version) {
             this.occurredOn = occurredOn;
             this.version = version;
         }
 
         @Override
-        public Date occurredOn() {
+        public ZonedDateTime eventOccurredOn() {
             return occurredOn;
         }
 
         @Override
-        public int version() {
+        public int eventVersion() {
             return version;
         }
 

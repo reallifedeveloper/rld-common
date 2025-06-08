@@ -1,10 +1,11 @@
 package com.reallifedeveloper.common.application.notification;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
-import com.reallifedeveloper.common.infrastructure.persistence.AbstractJpaEntity;
+import com.reallifedeveloper.common.domain.ErrorHandling;
+import com.reallifedeveloper.common.infrastructure.persistence.BaseJpaEntity;
 
 /**
  * Keeps track of the most recently published message on a certain publication channel.
@@ -15,7 +16,7 @@ import com.reallifedeveloper.common.infrastructure.persistence.AbstractJpaEntity
  */
 @Entity
 @Table(name = "message_tracker")
-public class PublishedMessageTracker extends AbstractJpaEntity<Long> {
+public class PublishedMessageTracker extends BaseJpaEntity<Long> {
 
     @Column(name = "last_published_message_id", nullable = false, unique = false)
     private Long lastPublishedMessageId;
@@ -24,17 +25,13 @@ public class PublishedMessageTracker extends AbstractJpaEntity<Long> {
     private String publicationChannel;
 
     /**
-     * Creates a new <code>PublishedMessageTracker</code> with the id of the most recently published message
-     * on the given publication channel.
+     * Creates a new {@code PublishedMessageTracker} with the id of the most recently published message on the given publication channel.
      *
      * @param lastPublishedMessageId the id of the most recently published message on the publication channel
-     * @param publicationChannel the name of the publication channel, e.g., the name of an exchange in a
-     * messaging system
+     * @param publicationChannel     the name of the publication channel, e.g., the name of an exchange in a messaging system
      */
     public PublishedMessageTracker(long lastPublishedMessageId, String publicationChannel) {
-        if (publicationChannel == null) {
-            throw new IllegalArgumentException("type must not be null");
-        }
+        ErrorHandling.checkNull("publicationChannel must not be null", publicationChannel);
         this.lastPublishedMessageId = lastPublishedMessageId;
         this.publicationChannel = publicationChannel;
     }
@@ -42,13 +39,12 @@ public class PublishedMessageTracker extends AbstractJpaEntity<Long> {
     /**
      * Required by JPA.
      */
-    PublishedMessageTracker() {
+    /* package-private */ PublishedMessageTracker() {
         super();
     }
 
     /**
-     * Gives the id of the most recently published message on the publication channel associated with this
-     * <code>PublishedMessageTracker</code>.
+     * Gives the id of the most recently published message on the publication channel associated with this {@code PublishedMessageTracker}.
      *
      * @return the id of the most recently published message
      */
@@ -57,8 +53,7 @@ public class PublishedMessageTracker extends AbstractJpaEntity<Long> {
     }
 
     /**
-     * Sets the id of the most recently published message on the publication channel associated with this
-     * <code>PublishedMessageTracker</code>.
+     * Sets the id of the most recently published message on the publication channel associated with this {@code PublishedMessageTracker}.
      *
      * @param newLastPublishedMessageId the new id of the most recently published message
      */
@@ -67,7 +62,7 @@ public class PublishedMessageTracker extends AbstractJpaEntity<Long> {
     }
 
     /**
-     * Gives the name of the publication channel for this <code>PublishedMessageTracker</code>.
+     * Gives the name of the publication channel for this {@code PublishedMessageTracker}.
      *
      * @return the name of the publication channel
      */

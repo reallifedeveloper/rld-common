@@ -1,27 +1,24 @@
 package com.reallifedeveloper.common.infrastructure.persistence;
 
 import java.sql.Statement;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
 import org.dbunit.dataset.datatype.IDataTypeFactory;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.reallifedeveloper.common.application.eventstore.StoredEvent;
 import com.reallifedeveloper.common.application.eventstore.StoredEventRepository;
-import com.reallifedeveloper.tools.test.TestUtil;
 import com.reallifedeveloper.tools.test.database.dbunit.AbstractDbTest;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:META-INF/spring-context-rld-common-test.xml" })
+@SpringJUnitConfig(locations = { "classpath:META-INF/spring-context-rld-common-test.xml" })
 public class JpaStoredEventRepositoryIT extends AbstractDbTest {
 
     @Autowired
@@ -37,89 +34,90 @@ public class JpaStoredEventRepositoryIT extends AbstractDbTest {
         super(null, "/dbunit/rld-common.dtd", "/dbunit/stored_event.xml");
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
-        // In dbunit/stored_event.xml we insert 10 events, so we want the next event ID to be 11.
-        // This works for test databases using sequences for primary key generation, such as HSQLDB.
+        // Reset sequence for test databases that use sequences for primary key generation.
         try (Statement statement = ds.getConnection().createStatement()) {
-            statement.executeUpdate("ALTER SEQUENCE hibernate_sequence RESTART WITH 11");
+            statement.executeUpdate("ALTER SEQUENCE stored_event_seq RESTART WITH 60");
         }
     }
 
     @Test
     public void allEventsSince() {
-        Date startDate = TestUtil.parseDateTime("2014-06-07 13:52:00");
+        ZonedDateTime startDateTime = ZonedDateTime.parse("2014-06-07T13:52:00Z");
         final int numEventsTotal = 10;
         final int firstEventIdToRetrieve = 6;
         final int numEventsToRetrieve = numEventsTotal - firstEventIdToRetrieve + 1;
+
         List<StoredEvent> storedEvents = repository.allEventsSince(firstEventIdToRetrieve - 1);
-        Assert.assertEquals("Wrong number of stored events found: ", numEventsToRetrieve, storedEvents.size());
+        Assertions.assertEquals(numEventsToRetrieve, storedEvents.size(), "Wrong number of stored events found");
+
         for (int i = 0; i < numEventsToRetrieve; i++) {
             StoredEvent storedEvent = storedEvents.get(i);
             int expectedStoredEventId = i + firstEventIdToRetrieve;
-            Assert.assertEquals("Stored event has wrong ID: ", expectedStoredEventId, storedEvent.id().longValue());
-            Assert.assertEquals("Stored event has wrong type: ", "foo" + expectedStoredEventId,
-                    storedEvent.eventType());
-            Assert.assertEquals("Stored event has wrong body: ", "bar" + expectedStoredEventId,
-                    storedEvent.eventBody());
-            Assert.assertEquals("Stored event timestamp is wrong: ",
-                    startDate.getTime() + (expectedStoredEventId - 1) * 1000, storedEvent.occurredOn().getTime());
-            Assert.assertEquals("Stored event version is wrong: ", 2, storedEvent.version().intValue());
+            Assertions.assertEquals(expectedStoredEventId, storedEvent.id().longValue(), "Stored event has wrong ID");
+            Assertions.assertEquals("foo" + expectedStoredEventId, storedEvent.eventType(), "Stored event has wrong type");
+            Assertions.assertEquals("bar" + expectedStoredEventId, storedEvent.eventBody(), "Stored event has wrong body");
+            Assertions.assertEquals(startDateTime.plusSeconds(expectedStoredEventId - 1), storedEvent.occurredOn(),
+             "Stored event timestamp is wrong");
+            Assertions.assertEquals(2, storedEvent.version().intValue(), "Stored event version is wrong");
         }
     }
 
     @Test
     public void allEventsSinceWithNoEvents() {
         List<StoredEvent> storedEvents = repository.allEventsSince(4711);
-        Assert.assertEquals("There should be no stored events: ", 0, storedEvents.size());
+        Assertions.assertEquals(0, storedEvents.size(), "There should be no stored events");
     }
 
     @Test
     public void allEventsBetween() throws Exception {
-        Date startDate = TestUtil.parseDateTime("2014-06-07 13:52:00");
+        ZonedDateTime startDateTime = ZonedDateTime.parse("2014-06-07T13:52:00Z");
         final int firstEventIdToRetrieve = 5;
         final int lastEventIdToRetrieve = 7;
         final int numEventsToRetrieve = lastEventIdToRetrieve - firstEventIdToRetrieve + 1;
+
         List<StoredEvent> storedEvents = repository.allEventsBetween(firstEventIdToRetrieve, lastEventIdToRetrieve);
-        Assert.assertEquals("Wrong number of stored events found: ", numEventsToRetrieve, storedEvents.size());
+        Assertions.assertEquals(numEventsToRetrieve, storedEvents.size(), "Wrong number of stored events found");
+
         for (int i = 0; i < numEventsToRetrieve; i++) {
             StoredEvent storedEvent = storedEvents.get(i);
             int expectedStoredEventId = i + firstEventIdToRetrieve;
-            Assert.assertEquals("Stored event has wrong type: ", "foo" + expectedStoredEventId,
-                    storedEvent.eventType());
-            Assert.assertEquals("Stored event has wrong body: ", "bar" + expectedStoredEventId,
-                    storedEvent.eventBody());
-            Assert.assertEquals("Stored event timestamp is wrong: ",
-                    startDate.getTime() + (expectedStoredEventId - 1) * 1000, storedEvent.occurredOn().getTime());
-            Assert.assertEquals("Stored event version is wrong: ", 2, storedEvent.version().intValue());
+            Assertions.assertEquals("foo" + expectedStoredEventId, storedEvent.eventType(), "Stored event has wrong type");
+            Assertions.assertEquals("bar" + expectedStoredEventId, storedEvent.eventBody(), "Stored event has wrong body");
+            Assertions.assertEquals(startDateTime.plusSeconds(expectedStoredEventId - 1), storedEvent.occurredOn(),
+             "Stored event timestamp is wrong");
+            Assertions.assertEquals(2, storedEvent.version().intValue(), "Stored event version is wrong");
         }
     }
 
     @Test
     public void allEventsBetweenWithNoEvents() {
         List<StoredEvent> storedEvents = repository.allEventsBetween(4711, 4711);
-        Assert.assertEquals("There should be no stored events: ", 0, storedEvents.size());
+        Assertions.assertEquals(0, storedEvents.size(), "There should be no stored events");
     }
 
     @Test
     public void saveEvent() throws Exception {
-        StoredEvent storedEvent = new StoredEvent("foo", "bar", new Date(), 1);
+        StoredEvent storedEvent = new StoredEvent("foo", "bar", ZonedDateTime.now(), 1);
         repository.save(storedEvent);
-        Assert.assertNotNull("ID should have been set", storedEvent.id());
+
+        Assertions.assertNotNull(storedEvent.id(), "ID should have been set");
+
         List<StoredEvent> storedEvents = repository.allEventsBetween(storedEvent.id(), storedEvent.id());
-        Assert.assertEquals("Wrong number of stored events found: ", 1, storedEvents.size());
-        Assert.assertEquals("Wrong last stored event ID: ", storedEvent.id(), repository.lastStoredEventId());
+        Assertions.assertEquals(1, storedEvents.size(), "Wrong number of stored events found");
+        Assertions.assertEquals(storedEvent.id(), repository.lastStoredEventId().get(), "Wrong last stored event ID");
     }
 
     @Test
     public void lastStoredEventId() {
-        Assert.assertEquals("Wrong last stored event ID: ", 10, repository.lastStoredEventId().longValue());
+        Assertions.assertEquals(10, repository.lastStoredEventId().get().longValue(), "Wrong last stored event ID");
     }
 
     @Test
     public void lastStoredEventIdNoEvents() {
         ((JpaStoredEventRepository) repository).deleteAll();
-        Assert.assertNull("Last stored event ID in empty repository should be null", repository.lastStoredEventId());
+        Assertions.assertTrue(repository.lastStoredEventId().isEmpty(), "Last stored event ID in empty repository should be empty");
     }
 
     @Override
@@ -128,7 +126,7 @@ public class JpaStoredEventRepositoryIT extends AbstractDbTest {
     }
 
     @Override
-    protected IDataTypeFactory getDataTypeFactory() {
-        return dataTypeFactory;
+    protected Optional<IDataTypeFactory> getDataTypeFactory() {
+        return Optional.of(dataTypeFactory);
     }
 }

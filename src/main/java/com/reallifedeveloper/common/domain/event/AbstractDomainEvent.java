@@ -1,7 +1,11 @@
 package com.reallifedeveloper.common.domain.event;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import com.reallifedeveloper.common.domain.ErrorHandling;
 import com.reallifedeveloper.common.domain.registry.CommonDomainRegistry;
 
 /**
@@ -13,14 +17,21 @@ public abstract class AbstractDomainEvent implements DomainEvent {
 
     private static final long serialVersionUID = 1L;
 
-    private Date occurredOn;
-    private int version;
+    /**
+     * The timestamp when this event occurred.
+     */
+    private final ZonedDateTime eventOccurredOn;
 
     /**
-     * Creates a new <code>AbstractDomainEvent</code> that occurred now and has a version of 1.
+     * The version of this event. In a long-lived system, it may be necessary to work with old versions of domaim events and keeping track
+     * of the version makes this easier.
+     */
+    private final int eventVersion;
+
+    /**
+     * Creates a new {@code AbstractDomainEvent} that occurred now and has a version of 1.
      * <p>
-     * The time of occurrence is taken from calling the
-     * {@link com.reallifedeveloper.common.domain.TimeService#now()} method on the
+     * The time of occurrence is taken from calling the {@link com.reallifedeveloper.common.domain.TimeService#now()} method on the
      * {@link CommonDomainRegistry#timeService()}.
      */
     public AbstractDomainEvent() {
@@ -28,67 +39,60 @@ public abstract class AbstractDomainEvent implements DomainEvent {
     }
 
     /**
-     * Creates a new <code>AbstractDomainEvent</code> that occurred now and has the given version.
+     * Creates a new {@code AbstractDomainEvent} that occurred now and has the given version.
      * <p>
-     * The time of occurrence is taken from calling the
-     * {@link com.reallifedeveloper.common.domain.TimeService#now()} method on the
+     * The time of occurrence is taken from calling the {@link com.reallifedeveloper.common.domain.TimeService#now()} method on the
      * {@link CommonDomainRegistry#timeService()}.
      *
-     * @param version the version of the event
+     * @param eventVersion the version of the event
      */
-    public AbstractDomainEvent(int version) {
-        this(CommonDomainRegistry.timeService().now(), version);
+    public AbstractDomainEvent(int eventVersion) {
+        this(CommonDomainRegistry.timeService().now(), eventVersion);
     }
 
     /**
-     * Creates a new <code>AbstractDomainEvent</code> that occurred at the given time and has a version of 1.
+     * Creates a new {@code AbstractDomainEvent} that occurred at the given time and has a version of 1.
      *
-     * @param occurredOn the date and time the event occurred
+     * @param eventOccurredOn the date and time the event occurred
      */
-    public AbstractDomainEvent(Date occurredOn) {
-        this(occurredOn, 1);
+    public AbstractDomainEvent(ZonedDateTime eventOccurredOn) {
+        this(eventOccurredOn, 1);
     }
 
     /**
-     * Creates a new <code>AbstractDomainEvent</code> that occurred at the given time and has the given version.
+     * Creates a new {@code AbstractDomainEvent} that occurred at the given time and has the given version.
      *
-     * @param occurredOn the time the event occurred
-     * @param version the version of the event
+     * @param eventOccurredOn the time the event occurred
+     * @param eventVersion    the version of the event
      */
-    public AbstractDomainEvent(Date occurredOn, int version) {
-        if (occurredOn == null) {
-            throw new IllegalArgumentException("occurredOn must not be null");
-        }
-        this.occurredOn = new Date(occurredOn.getTime());
-        this.version = version;
+    public AbstractDomainEvent(ZonedDateTime eventOccurredOn, int eventVersion) {
+        ErrorHandling.checkNull("eventOccurredOn must not be null", eventOccurredOn);
+        this.eventOccurredOn = eventOccurredOn;
+        this.eventVersion = eventVersion;
     }
 
     @Override
-    public Date occurredOn() {
-        return new Date(occurredOn.getTime());
+    public ZonedDateTime eventOccurredOn() {
+        return eventOccurredOn;
     }
 
     @Override
-    public int version() {
-        return version;
+    public int eventVersion() {
+        return eventVersion;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{occurredOn=" + occurredOn() + ", version=" + version() + "}";
+        return getClass().getSimpleName() + "{eventOccurredOn=" + eventOccurredOn() + ", eventVersion=" + eventVersion() + "}";
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + occurredOn.hashCode();
-        result = prime * result + version;
-        return result;
+        return Objects.hash(eventOccurredOn, eventVersion);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
@@ -98,13 +102,19 @@ public abstract class AbstractDomainEvent implements DomainEvent {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        DomainEvent other = (DomainEvent) obj;
-        if (!occurredOn.equals(other.occurredOn())) {
-            return false;
-        }
-        if (version != other.version()) {
-            return false;
-        }
-        return true;
+        AbstractDomainEvent other = (AbstractDomainEvent) obj;
+        return Objects.equals(eventOccurredOn, other.eventOccurredOn) && Objects.equals(eventVersion, other.eventVersion);
+    }
+
+    /**
+     * Make finalize method final to avoid "Finalizer attacks" and corresponding SpotBugs warning (CT_CONSTRUCTOR_THROW).
+     *
+     * @see <a href="https://wiki.sei.cmu.edu/confluence/display/java/OBJ11-J.+Be+wary+of+letting+constructors+throw+exceptions">
+     *      Explanation of finalizer attack</a>
+     */
+    @Override
+    @SuppressWarnings({ "checkstyle:NoFinalizer", "PMD.EmptyFinalizer", "PMD.EmptyMethodInAbstractClassShouldBeAbstract" })
+    protected final void finalize() throws Throwable {
+        // Do nothing
     }
 }

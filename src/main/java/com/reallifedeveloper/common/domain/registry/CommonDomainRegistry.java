@@ -14,7 +14,7 @@ public class CommonDomainRegistry extends AbstractDomainRegistry {
     /**
      * Gives the {@link DomainEventPublisher} to use to publish domain events.
      *
-     * @return the <code>DomainEventPublisher</code>
+     * @return the {@code DomainEventPublisher}
      */
     public static DomainEventPublisher domainEventPublisher() {
         return getBean(DomainEventPublisher.class);
@@ -23,7 +23,7 @@ public class CommonDomainRegistry extends AbstractDomainRegistry {
     /**
      * Gives the {@link TimeService} to use to work with "current" time.
      *
-     * @return the <code>TimeService</code>
+     * @return the {@code TimeService}
      */
     public static TimeService timeService() {
         return getBean(TimeService.class);

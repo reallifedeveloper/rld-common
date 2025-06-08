@@ -1,17 +1,17 @@
 package com.reallifedeveloper.common.resource;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
-import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 import com.reallifedeveloper.common.resource.TestResource.RequestInfo;
 
@@ -22,7 +22,7 @@ public class TestResourceTest {
     private static TestResource resource;
     private static Server server;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         startServer();
     }
@@ -31,13 +31,13 @@ public class TestResourceTest {
         resource = new TestResource();
         JAXRSServerFactoryBean serverFactoryBean = new JAXRSServerFactoryBean();
         serverFactoryBean.setResourceClasses(TestResource.class);
-        serverFactoryBean.setProvider(new JacksonJaxbJsonProvider());
+        serverFactoryBean.setProvider(new JacksonJsonProvider());
         serverFactoryBean.setResourceProvider(TestResource.class, new SingletonResourceProvider(resource));
         serverFactoryBean.setAddress(TEST_URL);
         server = serverFactoryBean.create();
     }
 
-    @AfterClass
+    @AfterAll
     public static void destroy() {
         server.stop();
         server.destroy();
@@ -108,18 +108,18 @@ public class TestResourceTest {
     }
 
     private void verifyRequest(RequestInfo request, String path, String method, String postData) {
-        Assert.assertEquals("Wrong request path: ", path, request.path());
-        Assert.assertEquals("Wrong request method: ", method, request.method());
-        Assert.assertEquals("Wrong post data: ", postData, request.data());
+        Assertions.assertEquals(path, request.path(), "Wrong request path: ");
+        Assertions.assertEquals(method, request.method(), "Wrong request method: ");
+        Assertions.assertEquals(postData, request.data(), "Wrong post data: ");
     }
 
     private void verifyResponse(Response response, Object entity, int status) {
-        Assert.assertNotNull("Response should not be null", response);
+        Assertions.assertNotNull(response, "Response should not be null");
         if (entity == null) {
-            Assert.assertNull("Response entity should be null", response.getEntity());
+            Assertions.assertNull(response.getEntity(), "Response entity should be null");
         } else {
-            Assert.assertEquals("Wrong reponse entity: ", entity, response.readEntity(entity.getClass()));
+            Assertions.assertEquals(entity, response.readEntity(entity.getClass()), "Wrong response entity: ");
         }
-        Assert.assertEquals("Wrong response HTTP status code: ", status, response.getStatus());
+        Assertions.assertEquals(status, response.getStatus(), "Wrong response HTTP status code: ");
     }
 }

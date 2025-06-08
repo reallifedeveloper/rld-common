@@ -1,13 +1,15 @@
 package com.reallifedeveloper.common.infrastructure;
 
-import java.awt.Color;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.reallifedeveloper.common.application.eventstore.EventStore;
 import com.reallifedeveloper.common.application.eventstore.InMemoryStoredEventRepository;
@@ -20,276 +22,359 @@ import com.reallifedeveloper.common.domain.event.AbstractDomainEvent;
 
 public class GsonNotificationReaderTest {
 
+    private static final String NOTIFICATION_JSON = """
+            {
+                "eventType":%s,
+                "storedEventId":%s,
+                "occurredOn":%s,
+                "event":%s
+            }
+            """.replaceAll("\\s", "");
+
+    private static final String FOO_EVENT_JSON = """
+            {
+                "event": {
+                    "foo":%s
+                }
+            }
+            """.replaceAll("\\s", "");
+
     private static final double DELTA = 0.0000001;
 
-    private InMemoryStoredEventRepository storedEventRepository = new InMemoryStoredEventRepository();
-    private ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
-    private EventStore eventStore = new EventStore(objectSerializer, storedEventRepository);
-    private NotificationFactory notificationFactory = NotificationFactory.instance(eventStore);
-
-    private DateFormat dateFormat = new SimpleDateFormat(GsonObjectSerializer.DATE_FORMAT);
-
+    /**
+     * This test shows how an {@link EventStore} can be used to help work with notifications.
+     */
     @Test
     public void realNotification() {
+        InMemoryStoredEventRepository storedEventRepository = new InMemoryStoredEventRepository();
+        ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
+        EventStore eventStore = new EventStore(objectSerializer, storedEventRepository);
+        NotificationFactory notificationFactory = NotificationFactory.instance(eventStore);
         TestEvent testEvent = new TestEvent(42, "Foo!", 1.05);
         eventStore.add(testEvent);
         List<StoredEvent> storedEvents = eventStore.allEventsSince(0);
-        Assert.assertEquals("Wrong number of stored events: ", 1, storedEvents.size());
+        assertEquals(1, storedEvents.size(), "Wrong number of stored events");
         List<Notification> notifications = notificationFactory.fromStoredEvents(storedEvents);
-        Assert.assertEquals("Wrong number of notifications: ", 1, notifications.size());
+        assertEquals(1, notifications.size(), "Wrong number of notifications");
         Notification notification = notifications.get(0);
         String serializedNotification = objectSerializer.serialize(notification);
         NotificationReader reader = new GsonNotificationReader(serializedNotification);
-        Assert.assertEquals("Wrong event type: ", testEvent.getClass().getName(), reader.eventType());
-        Assert.assertEquals("Wrong stored event ID: ", 1, reader.storedEventId());
-        Assert.assertEquals("Wrong occurred on timestamp: ", testEvent.occurredOn(), reader.occurredOn());
-        Assert.assertEquals("Wrong event version: ", 1, reader.eventVersion());
-        Assert.assertEquals("Wrong event ID: ", testEvent.id, reader.eventLongValue("id").longValue());
-        Assert.assertEquals("Wrong event name: ", testEvent.name, reader.eventStringValue("name"));
-        Assert.assertEquals("Wrong event double value: ", testEvent.d, reader.eventDoubleValue("d"), DELTA);
-        Assert.assertEquals("Wrong event color value: ", testEvent.color.getRGB(),
-                reader.eventIntValue("color.value").intValue());
+        assertEquals(testEvent.getClass().getName(), reader.eventType(), "Wrong event type");
+        assertEquals(1, reader.storedEventId(), "Wrong stored event ID");
+        assertEquals(testEvent.eventOccurredOn().toInstant().truncatedTo(ChronoUnit.MILLIS), reader.occurredOn().toInstant(),
+                "Wrong occurred on timestamp");
+        assertEquals(1, reader.eventVersion(), "Wrong event version");
+        assertEquals(testEvent.id, reader.eventLongValue("id").get().longValue(), "Wrong event ID");
+        assertEquals(testEvent.name, reader.eventStringValue("name").get(), "Wrong event name");
+        assertEquals(testEvent.d, reader.eventDoubleValue("d").get(), DELTA, "Wrong event double value");
+        assertEquals(testEvent.color.getRGB(), reader.eventIntValue("color.value").get().intValue(), "Wrong event color value");
+    }
+
+    @Test
+    public void eventTypeForNotificationWithNullEventType() {
+        String json = NOTIFICATION_JSON.formatted(null, 42, "\"2025-02-12T21:24:45.672+01\"", "{\"foo\":42}");
+        NotificationReader reader = new GsonNotificationReader(json);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> reader.eventType());
+        assertEquals("Field eventType is missing or null: object=" + json, e.getMessage());
+    }
+
+    @Test
+    public void eventTypeForEmptyNotification() {
+        String json = FOO_EVENT_JSON.formatted(42);
+        NotificationReader reader = new GsonNotificationReader(json);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> reader.eventType());
+        assertEquals("Field eventType is missing or null: object=" + json, e.getMessage());
+    }
+
+    @Test
+    public void storedEventIdForNotificationWithNullStoredEventId() {
+        String json = NOTIFICATION_JSON.formatted("\"Event Type\"", null, "\"2025-02-12T21:24:45.672+01\"", "{\"foo\":42}");
+        NotificationReader reader = new GsonNotificationReader(json);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> reader.storedEventId());
+        assertEquals("Field storedEventId is missing or null: object=" + json, e.getMessage());
+    }
+
+    @Test
+    public void storedEventIdForEmptyNotification() {
+        String json = FOO_EVENT_JSON.formatted(42);
+        NotificationReader reader = new GsonNotificationReader(json);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> reader.storedEventId());
+        assertEquals("Field storedEventId is missing or null: object=" + json, e.getMessage());
+    }
+
+    @Test
+    public void occurredOnForNotificationWithNullOccurredOn() {
+        String json = NOTIFICATION_JSON.formatted("\"Event Type\"", 42, null, "{\"foo\":42}");
+        NotificationReader reader = new GsonNotificationReader(json);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> reader.occurredOn());
+        assertEquals("Field occurredOn is missing or null: object=" + json, e.getMessage());
+    }
+
+    @Test
+    public void occurredOnForEmptyNotification() {
+        String json = FOO_EVENT_JSON.formatted(42);
+        NotificationReader reader = new GsonNotificationReader(json);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> reader.occurredOn());
+        assertEquals("Field occurredOn is missing or null: object=" + json, e.getMessage());
+    }
+
+    @Test
+    public void eventVersionForNotificationWithNullEventVersion() {
+        String eventJson = "{\"foo\":42,\"eventVersion\":null}";
+        String json = NOTIFICATION_JSON.formatted("\"Event Type\"", 42, null, eventJson);
+        NotificationReader reader = new GsonNotificationReader(json);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> reader.eventVersion());
+        assertEquals("Field eventVersion is missing or null: object=" + eventJson, e.getMessage());
+    }
+
+    @Test
+    public void eventVersionForNotificationWitoutEventVersion() {
+        String eventJson = "{\"foo\":42}";
+        String json = NOTIFICATION_JSON.formatted("\"Event Type\"", 42, null, eventJson);
+        NotificationReader reader = new GsonNotificationReader(json);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> reader.eventVersion());
+        assertEquals("Field eventVersion is missing or null: object=" + eventJson, e.getMessage());
+    }
+
+    @Test
+    public void eventVersionForNotificationWitNullEvent() {
+        String json = NOTIFICATION_JSON.formatted("\"Event Type\"", 42, "\"2025-02-12T21:24:45.672+01\"", null);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> new GsonNotificationReader(json));
+        assertEquals("event not found in JSON string: " + json, e.getMessage());
     }
 
     @Test
     public void eventIntValue() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", 42, reader.eventIntValue("foo").intValue());
+        assertEquals(42, reader.eventIntValue("foo").get().intValue(), "Foo has wrong value");
     }
 
     @Test
     public void eventIntValueMin() {
-        String json = "{\"event\":{\"foo\":" + Integer.MIN_VALUE + "}}";
+        String json = FOO_EVENT_JSON.formatted(Integer.MIN_VALUE);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", Integer.MIN_VALUE, reader.eventIntValue("foo").intValue());
+        assertEquals(Integer.MIN_VALUE, reader.eventIntValue("foo").get().intValue(), "Foo has wrong value");
     }
 
     @Test
     public void eventIntValueMax() {
-        String json = "{\"event\":{\"foo\":" + Integer.MAX_VALUE + "}}";
+        String json = FOO_EVENT_JSON.formatted(Integer.MAX_VALUE);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", Integer.MAX_VALUE, reader.eventIntValue("foo").intValue());
+        assertEquals(Integer.MAX_VALUE, reader.eventIntValue("foo").get().intValue(), "Foo has wrong value");
     }
 
     @Test
-    public void eventIntValueNull() {
-        String json = "{\"event\":{\"foo\":null}}";
+    public void eventIntValueEmpty() {
+        String json = FOO_EVENT_JSON.formatted((Integer) null);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Foo should be null", reader.eventIntValue("foo"));
+        assertTrue(reader.eventIntValue("foo").isEmpty(), "Foo should be empty");
     }
 
     @Test
     public void eventIntValueNonExisting() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Baz should be null", reader.eventIntValue("baz"));
+        assertTrue(reader.eventIntValue("baz").isEmpty(), "Baz should be empty");
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void eventIntValueNotInteger() {
-        String json = "{\"event\":{\"foo\":\"bar\"}}";
+        String json = FOO_EVENT_JSON.formatted("\"bar\"");
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventIntValue("foo");
+        assertThrows(NumberFormatException.class, () -> reader.eventIntValue("foo"));
     }
 
     @Test
     public void eventLongValue() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", 42, reader.eventLongValue("foo").longValue());
+        assertEquals(42, reader.eventLongValue("foo").get().longValue(), "Foo has wrong value");
     }
 
     @Test
     public void eventLongValueMin() {
-        String json = "{\"event\":{\"foo\":" + Long.MIN_VALUE + "}}";
+        String json = FOO_EVENT_JSON.formatted(Long.MIN_VALUE);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", Long.MIN_VALUE, reader.eventLongValue("foo").longValue());
+        assertEquals(Long.MIN_VALUE, reader.eventLongValue("foo").get().longValue(), "Foo has wrong value");
     }
 
     @Test
     public void eventLongValueMax() {
-        String json = "{\"event\":{\"foo\":" + Long.MAX_VALUE + "}}";
+        String json = FOO_EVENT_JSON.formatted(Long.MAX_VALUE);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", Long.MAX_VALUE, reader.eventLongValue("foo").longValue());
+        assertEquals(Long.MAX_VALUE, reader.eventLongValue("foo").get().longValue(), "Foo has wrong value");
     }
 
     @Test
-    public void eventLongValueNull() {
-        String json = "{\"event\":{\"foo\":null}}";
+    public void eventLongValueEmpty() {
+        String json = FOO_EVENT_JSON.formatted((Integer) null);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Foo should be null", reader.eventLongValue("foo"));
+        assertTrue(reader.eventLongValue("foo").isEmpty(), "Foo should be empty");
     }
 
     @Test
     public void eventLongValueNonExisting() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Baz should be null", reader.eventLongValue("baz"));
+        assertTrue(reader.eventLongValue("baz").isEmpty(), "Baz should be empty");
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void eventLongValueNotInteger() {
-        String json = "{\"event\":{\"foo\":\"bar\"}}";
+        String json = FOO_EVENT_JSON.formatted("\"bar\"");
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventLongValue("foo");
+        assertThrows(NumberFormatException.class, () -> reader.eventLongValue("foo"));
     }
 
     @Test
     public void eventDoubleValue() {
-        String json = "{\"event\":{\"foo\":47.11}}";
+        String json = FOO_EVENT_JSON.formatted(47.11);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", 47.11, reader.eventDoubleValue("foo"), DELTA);
+        assertEquals(47.11, reader.eventDoubleValue("foo").get(), DELTA, "Foo has wrong value");
     }
 
     @Test
     public void eventDoubleValueMin() {
-        String json = "{\"event\":{\"foo\":" + Double.MIN_VALUE + "}}";
+        String json = FOO_EVENT_JSON.formatted(Double.MIN_VALUE);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", Double.MIN_VALUE, reader.eventDoubleValue("foo"), DELTA);
+        assertEquals(Double.MIN_VALUE, reader.eventDoubleValue("foo").get(), DELTA, "Foo has wrong value");
     }
 
     @Test
     public void eventDoubleValueMax() {
-        String json = "{\"event\":{\"foo\":" + Double.MAX_VALUE + "}}";
+        String json = FOO_EVENT_JSON.formatted(Double.MAX_VALUE);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", Double.MAX_VALUE, reader.eventDoubleValue("foo"), DELTA);
+        assertEquals(Double.MAX_VALUE, reader.eventDoubleValue("foo").get(), DELTA, "Foo has wrong value");
     }
 
     @Test
     public void eventDoubleValueNull() {
-        String json = "{\"event\":{\"foo\":null}}";
+        String json = FOO_EVENT_JSON.formatted((Integer) null);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Foo should be null", reader.eventDoubleValue("foo"));
+        assertTrue(reader.eventDoubleValue("foo").isEmpty(), "Foo should be empty");
     }
 
     @Test
-    public void eventDoubleValueNonExisting() {
-        String json = "{\"event\":{\"foo\":42}}";
-        NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Baz should be null", reader.eventDoubleValue("baz"));
-    }
-
-    @Test(expected = NumberFormatException.class)
     public void eventDoubleValueNotNumber() {
-        String json = "{\"event\":{\"foo\":\"bar\"}}";
+        String json = FOO_EVENT_JSON.formatted("\"bar\"");
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventDoubleValue("foo");
+        assertThrows(NumberFormatException.class, () -> reader.eventDoubleValue("foo"));
     }
 
     @Test
     public void eventStringValue() {
-        String json = "{\"event\":{\"foo\":\"bar\"}}";
+        String json = FOO_EVENT_JSON.formatted("\"bar\"");
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", "bar", reader.eventStringValue("foo"));
+        assertEquals("bar", reader.eventStringValue("foo").get(), "Foo has wrong value");
     }
 
     @Test
     public void eventStringValueNull() {
-        String json = "{\"event\":{\"foo\":null}}";
+        String json = FOO_EVENT_JSON.formatted((Integer) null);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Foo should be null", reader.eventStringValue("foo"));
+        assertTrue(reader.eventStringValue("foo").isEmpty(), "Foo should be empty");
     }
 
     @Test
     public void eventStringValueNonExisting() {
-        String json = "{\"event\":{\"foo\":\"bar\"}}";
+        String json = FOO_EVENT_JSON.formatted("\"bar\"");
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Baz should be null", reader.eventStringValue("baz"));
+        assertTrue(reader.eventStringValue("baz").isEmpty(), "Baz should be empty");
     }
 
     @Test
-    public void eventDateValue() throws Exception {
-        String strDate = "2014-07-21T14:41:00:123+0100";
-        Date date = dateFormat.parse(strDate);
-        String json = "{\"event\":{\"foo\":\"" + strDate + "\"}}";
+    public void eventDateValue() {
+        String strDate = "2014-07-21T14:41:00.123Z";
+        ZonedDateTime date = ZonedDateTime.parse(strDate);
+        String json = FOO_EVENT_JSON.formatted("\"" + strDate + "\"");
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertEquals("Foo has wrong value: ", date, reader.eventDateValue("foo"));
+        assertEquals(date, reader.zonedDateTimeValue("foo").get(), "Foo has wrong value");
     }
 
     @Test
     public void eventDateValueNull() {
-        String json = "{\"event\":{\"foo\":null}}";
+        String json = FOO_EVENT_JSON.formatted((Integer) null);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Foo should be null", reader.eventDateValue("foo"));
+        assertTrue(reader.zonedDateTimeValue("foo").isEmpty(), "Foo should be empty");
     }
 
     @Test
     public void eventDateValueNonExisting() {
-        String json = "{\"event\":{\"foo\":null}}";
+        String json = FOO_EVENT_JSON.formatted((Integer) null);
         NotificationReader reader = new GsonNotificationReader(json);
-        Assert.assertNull("Baz should be null", reader.eventDateValue("baz"));
+        assertTrue(reader.zonedDateTimeValue("baz").isEmpty(), "Baz should be empty");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void eventDateValueNonWrongFormat() {
-        String json = "{\"event\":{\"foo\":\"bar\"}}";
+        String json = FOO_EVENT_JSON.formatted("\"bar\"");
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventDateValue("foo");
+        assertThrows(DateTimeParseException.class, () -> reader.zonedDateTimeValue("foo"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void eventTypeMissingType() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventType();
+        assertThrows(IllegalArgumentException.class, reader::eventType);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void notificationIdMissingId() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.storedEventId();
+        assertThrows(IllegalArgumentException.class, reader::storedEventId);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void occurredOnMissingDate() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.occurredOn();
+        assertThrows(IllegalArgumentException.class, reader::occurredOn);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void eventVersionMissingVersion() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventVersion();
+        assertThrows(IllegalArgumentException.class, reader::eventVersion);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nestedFieldNameNonExistingField() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventStringValue("bar.baz");
+        assertThrows(IllegalArgumentException.class, () -> reader.eventStringValue("bar.baz"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nestedFieldNameNotAnObject() {
-        String json = "{\"event\":{\"foo\":42}}";
+        String json = FOO_EVENT_JSON.formatted(42);
         NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventStringValue("foo.bar");
+        assertThrows(IllegalArgumentException.class, () -> reader.eventStringValue("foo.bar"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullJsonObject() {
-        new GsonNotificationReader(null);
+        assertThrows(IllegalArgumentException.class, () -> new GsonNotificationReader(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNotAJsonObject() {
-        new GsonNotificationReader("foo");
+        assertThrows(IllegalArgumentException.class, () -> new GsonNotificationReader("foo"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorMalformedJsonObject() {
-        new GsonNotificationReader("\\//+");
+        assertThrows(IllegalArgumentException.class, () -> new GsonNotificationReader("\\//+"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void validJsonButNotValidEventMessage() {
         String json = "{\"crap\":{\"foo\":42}}";
-        NotificationReader reader = new GsonNotificationReader(json);
-        reader.eventStringValue("foo");
+        Exception e = assertThrows(IllegalArgumentException.class, () -> new GsonNotificationReader(json));
+        assertEquals("event not found in JSON string: " + json, e.getMessage());
     }
 
     private static class TestEvent extends AbstractDomainEvent {
@@ -297,13 +382,26 @@ public class GsonNotificationReaderTest {
         private long id;
         private String name;
         private double d;
-        private Color color = Color.CYAN;
+        private MyColor color = MyColor.CYAN;
 
         TestEvent(long id, String name, double d) {
-            super(new Date());
+            super(ZonedDateTime.now());
             this.id = id;
             this.name = name;
             this.d = d;
+        }
+
+        public static class MyColor {
+            public static final MyColor CYAN = new MyColor(0x00ffff);
+            private int value;
+
+            MyColor(int value) {
+                this.value = value;
+            }
+
+            public int getRGB() {
+                return value;
+            }
         }
     }
 }

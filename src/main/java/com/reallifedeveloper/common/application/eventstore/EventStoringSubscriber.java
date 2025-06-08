@@ -1,5 +1,8 @@
 package com.reallifedeveloper.common.application.eventstore;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import com.reallifedeveloper.common.domain.ErrorHandling;
 import com.reallifedeveloper.common.domain.event.DomainEvent;
 import com.reallifedeveloper.common.domain.event.DomainEventSubscriber;
 
@@ -8,19 +11,18 @@ import com.reallifedeveloper.common.domain.event.DomainEventSubscriber;
  *
  * @author RealLifeDeveloper
  */
-public class EventStoringSubscriber implements DomainEventSubscriber<DomainEvent> {
+public final class EventStoringSubscriber implements DomainEventSubscriber<DomainEvent> {
 
     private final EventStore eventStore;
 
     /**
-     * Creates a new <code>EventStoringSubscriber</code> that uses the given {@link EventStore}.
+     * Creates a new {@code EventStoringSubscriber} that uses the given {@link EventStore}.
      *
-     * @param eventStore the <code>EventStore</code> to use
+     * @param eventStore the {@code EventStore} to use
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public EventStoringSubscriber(EventStore eventStore) {
-        if (eventStore == null) {
-            throw new IllegalArgumentException("eventStore must not be null");
-        }
+        ErrorHandling.checkNull("eventStore must not be null", eventStore);
         this.eventStore = eventStore;
     }
 

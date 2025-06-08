@@ -1,12 +1,16 @@
 package com.reallifedeveloper.common.resource;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.CacheControl;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 public class ResourceUtilTest {
 
@@ -22,9 +26,11 @@ public class ResourceUtilTest {
         verifyException(e, null, Status.BAD_REQUEST);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void webApplicationExceptionStringNullStatus() {
-        ResourceUtil.webApplicationException("foo", null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            ResourceUtil.webApplicationException("foo", null);
+        });
     }
 
     @Test
@@ -40,9 +46,11 @@ public class ResourceUtilTest {
         verifyException(e, null, Status.BAD_REQUEST);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void webApplicationExceptionThrowableNullStatus() {
-        ResourceUtil.webApplicationException(new IllegalArgumentException(), null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            ResourceUtil.webApplicationException(new IllegalArgumentException(), null);
+        });
     }
 
     @Test
@@ -84,22 +92,22 @@ public class ResourceUtilTest {
     @Test
     public void cacheControl() {
         CacheControl cacheControl = ResourceUtil.cacheControl(42);
-        Assert.assertEquals("Wrong max age: ", 42, cacheControl.getMaxAge());
+        assertEquals(42, cacheControl.getMaxAge(), "Wrong max age: ");
     }
 
     @Test
     public void noCache() {
         CacheControl cacheControl = ResourceUtil.noCache();
-        Assert.assertEquals("Wrong max age: ", -1, cacheControl.getMaxAge());
-        Assert.assertTrue("No-cache should be true", cacheControl.isNoCache());
-        Assert.assertTrue("No-store should be true", cacheControl.isNoStore());
-        Assert.assertTrue("Must-revalidate should be true", cacheControl.isMustRevalidate());
+        assertEquals(-1, cacheControl.getMaxAge(), "Wrong max age: ");
+        assertTrue(cacheControl.isNoCache(), "No-cache should be true");
+        assertTrue(cacheControl.isNoStore(), "No-store should be true");
+        assertTrue(cacheControl.isMustRevalidate(), "Must-revalidate should be true");
     }
 
     private void verifyException(WebApplicationException e, String entity, Status status) {
-        Assert.assertNotNull("Exception should not be null", e);
-        Assert.assertEquals("Wrong entity: ", entity, e.getResponse().getEntity());
-        Assert.assertEquals("Wrong status: ", status.getStatusCode(), e.getResponse().getStatus());
-        Assert.assertEquals("Wrong content type: ", MediaType.TEXT_PLAIN_TYPE, e.getResponse().getMediaType());
+        assertNotNull(e, "Exception should not be null");
+        assertEquals(entity, e.getResponse().getEntity(), "Wrong entity: ");
+        assertEquals(status.getStatusCode(), e.getResponse().getStatus(), "Wrong status: ");
+        assertEquals(MediaType.TEXT_PLAIN_TYPE, e.getResponse().getMediaType(), "Wrong content type: ");
     }
 }

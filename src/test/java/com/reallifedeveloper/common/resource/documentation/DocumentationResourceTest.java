@@ -1,23 +1,26 @@
 package com.reallifedeveloper.common.resource.documentation;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.security.MessageDigest;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.DatatypeConverter;
 
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.message.ExchangeImpl;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.xml.bind.DatatypeConverter;
 
 import com.reallifedeveloper.common.infrastructure.Markdown4jHtmlProducer;
 
@@ -25,12 +28,12 @@ public class DocumentationResourceTest {
 
     private static final String ENDPOINT_ADDRESS = "http://localhost/api";
 
-    private Markdown4jHtmlProducer htmlProducer = new Markdown4jHtmlProducer();
-    private DocumentationResource resource = new DocumentationResource("/markdown", htmlProducer);
+    private final Markdown4jHtmlProducer htmlProducer = new Markdown4jHtmlProducer();
+    private final DocumentationResource resource = new DocumentationResource("/markdown", htmlProducer);
 
     private UriInfo uriInfo;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         MessageImpl message = new MessageImpl();
         message.setExchange(new ExchangeImpl());
@@ -45,90 +48,85 @@ public class DocumentationResourceTest {
     @Test
     public void getDocumentationDefaultDocument() {
         Response response = resource.getDocumentation();
-        Assert.assertNotNull("Response should not be null", response);
-        Assert.assertEquals("Wrong status: ", Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong content type: ", "text/html;charset=UTF-8", response.getMediaType().toString());
+        assertNotNull(response, "Response should not be null");
+        assertEquals(Status.OK.getStatusCode(), response.getStatus(), "Wrong status");
+        assertEquals("text/html;charset=UTF-8", response.getMediaType().toString(), "Wrong content type");
         String html = (String) response.getEntity();
-        Assert.assertNotNull("Html should not be null", html);
+        assertNotNull(html, "Html should not be null");
         String expectedHtml = "<html><h1>README</h1>\n<p>Hello, <em>World</em>!</p>\n</html>";
-        Assert.assertEquals("Wrong html produced: ", expectedHtml, html);
+        assertEquals(expectedHtml, html, "Wrong html produced");
     }
 
     @Test
     public void getDocumentationDefaultDocumentDoesNotExist() {
         DocumentationResource r = new DocumentationResource("/dbunit", htmlProducer);
-        try {
-            r.getDocumentation();
-            Assert.fail("Loading a non-existing document should fail");
-        } catch (WebApplicationException e) {
-            Assert.assertEquals("Wrong status: ", Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
-        }
+        WebApplicationException exception = assertThrows(WebApplicationException.class, r::getDocumentation);
+        assertEquals(Status.NOT_FOUND.getStatusCode(), exception.getResponse().getStatus(), "Wrong status");
     }
 
     @Test
     public void getDocumentationNamedDocument() {
         Response response = resource.getDocumentation("foo.md");
-        Assert.assertNotNull("Response should not be null", response);
-        Assert.assertEquals("Wrong status: ", Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong content type: ", "text/html;charset=UTF-8", response.getMediaType().toString());
+        assertNotNull(response, "Response should not be null");
+        assertEquals(Status.OK.getStatusCode(), response.getStatus(), "Wrong status");
+        assertEquals("text/html;charset=UTF-8", response.getMediaType().toString(), "Wrong content type");
         String html = (String) response.getEntity();
-        Assert.assertNotNull("Html should not be null", html);
+        assertNotNull(html, "Html should not be null");
         String expectedHtml = "<html><h1>Foo</h1>\n<p>Bar!</p>\n</html>";
-        Assert.assertEquals("Wrong html produced: ", expectedHtml, html);
+        assertEquals(expectedHtml, html, "Wrong html produced");
     }
 
     @Test
     public void getDocumentationNamedBinaryDocument() throws Exception {
         Response response = resource.getDocumentation("foo.zip");
-        Assert.assertEquals("Wrong status: ", Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong content type: ", "application/octet-stream", response.getMediaType().toString());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus(), "Wrong status");
+        assertEquals("application/octet-stream", response.getMediaType().toString(), "Wrong content type");
         StreamingOutput stream = (StreamingOutput) response.getEntity();
-        Assert.assertNotNull("Stream should not be null", stream);
+        assertNotNull(stream, "Stream should not be null");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         stream.write(out);
         byte[] data = out.toByteArray();
-        // Check size of foo.zip on Cygwin: "ls -l foo.zip"
-        Assert.assertEquals("Wrong number of bytes in zip file: ", 164, data.length);
+        assertEquals(164, data.length, "Wrong number of bytes in zip file");
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         byte[] hash = md.digest(data);
-        // Get hash of foo.zip on Cygwin: "sha1sum foo.zip"
-        Assert.assertEquals("Wrong hash for zip file: ", "5d5b27f8e20c3db498f8fcc305ad34acd4fb6236",
-                DatatypeConverter.printHexBinary(hash).toLowerCase());
+        assertEquals("5d5b27f8e20c3db498f8fcc305ad34acd4fb6236",
+                DatatypeConverter.printHexBinary(hash).toLowerCase(), "Wrong hash for zip file");
     }
 
     @Test
     public void getDocumentationNamedDocumentDoesNotExist() {
-        try {
-            resource.getDocumentation("bar.txt");
-            Assert.fail("Loading a non-existing document should fail");
-        } catch (WebApplicationException e) {
-            Assert.assertEquals("Wrong status: ", Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
-        }
+        WebApplicationException exception = assertThrows(WebApplicationException.class,
+                () -> resource.getDocumentation("bar.txt"));
+        assertEquals(Status.NOT_FOUND.getStatusCode(), exception.getResponse().getStatus(), "Wrong status");
     }
 
     @Test
     public void redirect() {
         Response response = resource.redirect();
-        Assert.assertNotNull("Response should not be null", response);
-        Assert.assertEquals("Wrong status: ", Status.MOVED_PERMANENTLY.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong location header: ", ENDPOINT_ADDRESS + "/doc/",
-                response.getHeaderString("Location"));
-        Assert.assertEquals("Wrong body: ", ENDPOINT_ADDRESS + "/doc/", response.getEntity());
+        assertNotNull(response, "Response should not be null");
+        assertEquals(Status.MOVED_PERMANENTLY.getStatusCode(), response.getStatus(), "Wrong status");
+        assertEquals(ENDPOINT_ADDRESS + "/doc/", response.getHeaderString("Location"), "Wrong location header");
+        assertEquals(ENDPOINT_ADDRESS + "/doc/", response.getEntity(), "Wrong body");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNonExistingResourceDir() {
-        new DocumentationResource("foo", htmlProducer);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> new DocumentationResource("foo", htmlProducer));
+        assertEquals("resourceDir does not exist: foo", exception.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullResourceDir() {
-        new DocumentationResource(null, htmlProducer);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> new DocumentationResource(null, htmlProducer));
+        assertEquals("Arguments must not be null: resourceDir=null, htmlProducer=" + htmlProducer, exception.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullHtmlProducer() {
-        new DocumentationResource("/markdown", null);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> new DocumentationResource("/markdown", null));
+        assertEquals("Arguments must not be null: resourceDir=/markdown, htmlProducer=null", exception.getMessage());
     }
-
 }

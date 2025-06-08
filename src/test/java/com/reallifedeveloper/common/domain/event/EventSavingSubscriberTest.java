@@ -1,7 +1,9 @@
 package com.reallifedeveloper.common.domain.event;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 public class EventSavingSubscriberTest {
 
@@ -11,26 +13,26 @@ public class EventSavingSubscriberTest {
         TestEvent event2 = new TestEvent(2, "bar");
         EventSavingSubscriber subscriber = new EventSavingSubscriber();
         subscriber.handleEvent(event1);
-        Assert.assertEquals("Wrong number of handled events: ", 1, subscriber.events().size());
-        Assert.assertEquals("Wrong handled event at position 0: ", event1, subscriber.events().get(0));
+        assertEquals(1, subscriber.events().size(), "Wrong number of handled events: ");
+        assertEquals(event1, subscriber.events().get(0), "Wrong handled event at position 0: ");
         subscriber.handleEvent(event2);
-        Assert.assertEquals("Wrong number of handled events: ", 2, subscriber.events().size());
-        Assert.assertEquals("Wrong handled event at position 0: ", event1, subscriber.events().get(0));
-        Assert.assertEquals("Wrong handled event at position 1: ", event2, subscriber.events().get(1));
+        assertEquals(2, subscriber.events().size(), "Wrong number of handled events: ");
+        assertEquals(event1, subscriber.events().get(0), "Wrong handled event at position 0: ");
+        assertEquals(event2, subscriber.events().get(1), "Wrong handled event at position 1: ");
     }
 
     @Test
     public void clear() {
         EventSavingSubscriber subscriber = new EventSavingSubscriber();
         subscriber.handleEvent(new TestEvent(1, "foo"));
-        Assert.assertEquals("Wrong number of handled events: ", 1, subscriber.events().size());
+        assertEquals(1, subscriber.events().size(), "Wrong number of handled events: ");
         subscriber.clear();
-        Assert.assertTrue("Handled events should be empty after clear", subscriber.events().isEmpty());
+        assertTrue(subscriber.events().isEmpty(), "Handled events should be empty after clear");
     }
 
     @Test
     public void eventType() {
         EventSavingSubscriber subscriber = new EventSavingSubscriber();
-        Assert.assertEquals("Wrong event type: ", DomainEvent.class, subscriber.eventType());
+        assertEquals(DomainEvent.class, subscriber.eventType(), "Wrong event type: ");
     }
 }

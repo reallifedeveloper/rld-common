@@ -21,7 +21,7 @@ public interface LogConfiguratorMXBean {
      *
      * @param loggerName the name of the logger
      *
-     * @return the log level of <code>logger</code>
+     * @return the log level of {@code logger}
      */
     String getLogLevel(String loggerName);
 

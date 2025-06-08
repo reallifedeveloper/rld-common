@@ -24,12 +24,11 @@ public final class NotificationFactory {
     }
 
     /**
-     * Gives an instance of the factory that uses the given {@link EventStore} to create
-     * {@link Notification Notifications}.
+     * Gives an instance of the factory that uses the given {@link EventStore} to create {@link Notification Notifications}.
      *
-     * @param eventStore the <code>EventStore</code> to use
+     * @param eventStore the {@code EventStore} to use
      *
-     * @return a <code>NotificationFactory</code> instance
+     * @return a {@code NotificationFactory} instance
      */
     public static NotificationFactory instance(EventStore eventStore) {
         return new NotificationFactory(eventStore);
@@ -38,21 +37,21 @@ public final class NotificationFactory {
     /**
      * Creates a new {@link Notification} for the given {@link StoredEvent}.
      *
-     * @param storedEvent the stored event for which to create a <code>Notification</code>
+     * @param storedEvent the stored event for which to create a {@code Notification}
      *
-     * @return a new <code>Notification</code> for the stored event
+     * @return a new {@code Notification} for the stored event
      */
     public Notification fromStoredEvent(StoredEvent storedEvent) {
         DomainEvent domainEvent = eventStore.toDomainEvent(storedEvent);
-        return  new Notification(domainEvent, storedEvent.id());
+        return Notification.create(domainEvent, storedEvent.id());
     }
 
     /**
      * Creates new {@link Notification Notifications} for the given {@link StoredEvent StoredEvents}.
      *
-     * @param storedEvents a list with the stored events for which to create <code>Notifications</code>
+     * @param storedEvents a list with the stored events for which to create {@code Notifications}
      *
-     * @return a list of <code>Notifications</code> for the stored events
+     * @return a list of {@code Notifications} for the stored events
      */
     public List<Notification> fromStoredEvents(List<StoredEvent> storedEvents) {
         if (storedEvents == null) {

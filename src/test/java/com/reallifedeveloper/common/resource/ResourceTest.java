@@ -1,114 +1,121 @@
 package com.reallifedeveloper.common.resource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Assert;
-import org.junit.Test;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response.Status;
 
 public class ResourceTest {
 
     private TestResource resource = new TestResource();
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void handleErrorMethodNameNull() {
-        resource.handleError(null, new NullPointerException());
+        Exception e = assertThrows(IllegalArgumentException.class, () -> resource.handleError(null, new NullPointerException()));
+        assertEquals("Arguments must not be null: methodName=null, originalException=java.lang.NullPointerException", e.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void handleErrorOriginalExceptionNull() {
-        resource.handleError("foo", null);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> resource.handleError("foo", null));
+        assertEquals("Arguments must not be null: methodName=foo, originalException=null", e.getMessage());
     }
 
     @Test
     public void handleErrorIllegalArgumentException() {
         WebApplicationException exception = resource.handleError("foo", new IllegalArgumentException());
-        Assert.assertEquals("Wrong HTTP status code: ", Status.BAD_REQUEST.getStatusCode(),
-                exception.getResponse().getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), exception.getResponse().getStatus(), "Wrong HTTP status code: ");
     }
 
     @Test
     public void handleErrorFileNotFoundException() {
         WebApplicationException exception = resource.handleError("foo", new FileNotFoundException());
-        Assert.assertEquals("Wrong HTTP status code: ", Status.NOT_FOUND.getStatusCode(),
-                exception.getResponse().getStatus());
+        assertEquals(Status.NOT_FOUND.getStatusCode(), exception.getResponse().getStatus(), "Wrong HTTP status code: ");
     }
 
     @Test
     public void handleErrorNullPointerException() {
         WebApplicationException exception = resource.handleError("foo", new NullPointerException());
-        Assert.assertEquals("Wrong HTTP status code: ", Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                exception.getResponse().getStatus());
+        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), exception.getResponse().getStatus(), "Wrong HTTP status code: ");
     }
 
     @Test
     public void parseDate() throws Exception {
         String dateString = "2015-01-07";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = dateFormat.parse(dateString);
-        Assert.assertEquals("Wrong result from parseDate: ", date, resource.parseDate(dateString));
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate date = LocalDate.parse(dateString, dateFormatter);
+        assertEquals(date, resource.parseDate(dateString), "Wrong result from parseDate: ");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseNullDate() {
-        resource.parseDate(null);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> resource.parseDate(null));
+        assertEquals("date must not be null", e.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseMalformedDate() {
-        resource.parseDate("foo");
+        Exception e = assertThrows(DateTimeParseException.class, () -> resource.parseDate("foo"));
+        assertEquals("Text 'foo' could not be parsed at index 0", e.getMessage());
     }
 
     @Test
     public void parseUrl() throws Exception {
         String urlString = "http://www.google.com/foo";
-        URL url = new URL(urlString);
-        Assert.assertEquals("Wrong result from parseUrl: ", url, resource.parseUrl(urlString));
+        URL url = new URI(urlString).toURL();
+        assertEquals(url, resource.parseUrl(urlString), "Wrong result from parseUrl: ");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseNullUrl() {
-        resource.parseUrl(null);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> resource.parseUrl(null));
+        assertEquals("url must not be null", e.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseMalformedUrl() {
-        resource.parseUrl("foo");
+        Exception e = assertThrows(IllegalArgumentException.class, () -> resource.parseUrl("foo"));
+        assertEquals("URI is not absolute", e.getMessage());
     }
 
     @Test
     public void commaSeparatedStringToList() {
         List<String> strings = resource.commaSeparatedStringToList("  foo ,bar  ,  baz ");
-        Assert.assertEquals("Wrong strings in list: ", Arrays.asList("foo", "bar", "baz"), strings);
+        assertEquals(Arrays.asList("foo", "bar", "baz"), strings, "Wrong strings in list: ");
     }
 
     @Test
     public void commaSeparatedStringToListWithOnlyWhitespaceGivesEmptyList() {
         List<String> strings = resource.commaSeparatedStringToList("   ");
-        Assert.assertTrue("List should be empty", strings.isEmpty());
+        assertTrue(strings.isEmpty(), "List should be empty");
     }
 
     @Test
     public void commaSeparatedStringToListWithOnlyCommaGivesEmptyList() {
         List<String> strings = resource.commaSeparatedStringToList(",");
-        Assert.assertTrue("List should be empty", strings.isEmpty());
+        assertTrue(strings.isEmpty(), "List should be empty");
     }
 
     @Test
     public void nullCommaSeparatedStringToListGivesEmptyList() {
         List<String> strings = resource.commaSeparatedStringToList(null);
-        Assert.assertTrue("List should be empty", strings.isEmpty());
+        assertTrue(strings.isEmpty(), "List should be empty");
     }
 
-    private static class TestResource extends AbstractResource {
+    private static class TestResource extends BaseResource {
 
     }
 

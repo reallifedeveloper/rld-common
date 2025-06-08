@@ -1,6 +1,7 @@
 package com.reallifedeveloper.common.application.eventstore;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.reallifedeveloper.common.domain.Repository;
 
@@ -12,40 +13,37 @@ import com.reallifedeveloper.common.domain.Repository;
 public interface StoredEventRepository extends Repository<StoredEvent, Long> {
 
     /**
-     * Gives all <code>StoredEvents</code> with IDs greater than <code>storedEventId</code>, i.e., all
-     * events that occurred after the event with the given ID.
+     * Gives all {@code StoredEvents} with IDs greater than {@code storedEventId}, i.e., all events that occurred after the event with the
+     * given ID.
      *
      * @param storedEventId find all events with IDs greater than this
-     * @return a list of <code>StoredEvents</code> with IDs greater than or equal to <code>firstStoredEventId</code>
+     * @return a list of {@code StoredEvents} with IDs greater than or equal to {@code firstStoredEventId}
      */
     List<StoredEvent> allEventsSince(long storedEventId);
 
     /**
-     * Gives all <code>StoredEvents</code> with IDs greater than or equal to <code>firstStoredEventId</code>
-     * and less than or equal to <code>lastStoredEventId</code>, i.e., all events that occurred between the
-     * events with the given IDs, inclusive.
+     * Gives all {@code StoredEvents} with IDs greater than or equal to {@code firstStoredEventId} and less than or equal to
+     * {@code lastStoredEventId}, i.e., all events that occurred between the events with the given IDs, inclusive.
      *
-     * @param firstStoredEventId ID of the first <code>StoredEvent</code> to retrieve
-     * @param lastStoredEventId ID of the last <code>StoredEvent</code> to retrieve
-     * @return a list of all <code>StoredEvents</code> with IDs between <code>firstStoredEventId</code>
-     * and <code>lastStoredEventId</code>, inclusive
+     * @param firstStoredEventId ID of the first {@code StoredEvent} to retrieve
+     * @param lastStoredEventId  ID of the last {@code StoredEvent} to retrieve
+     * @return a list of all {@code StoredEvents} with IDs between {@code firstStoredEventId} and {@code lastStoredEventId}, inclusive
      */
     List<StoredEvent> allEventsBetween(long firstStoredEventId, long lastStoredEventId);
 
     /**
      * Saves a {@link StoredEvent}.
      *
-     * @param storedEvent the <code>StoredEvent</code> to save
-     * @param <S> the type of the <code>StoredEvent</code>
-     * @return the saved <code>StoredEvent</code>, which may have been changed by the save operation
+     * @param storedEvent the {@code StoredEvent} to save
+     * @param <S>         the type of the {@code StoredEvent}
+     * @return the saved {@code StoredEvent}, which may have been changed by the save operation
      */
     <S extends StoredEvent> S save(S storedEvent);
 
     /**
-     * Gives the ID of the most recently saved <code>StoredEvent</code> in the repository.
+     * Gives the ID of the most recently saved {@code StoredEvent} in the repository.
      *
-     * @return the ID of the most recently saved <code>StoredEvent</code> or <code>null</code> if the
-     * repository is empty
+     * @return the ID of the most recently saved {@code StoredEvent} unless the repository is empty
      */
-    Long lastStoredEventId();
+    Optional<Long> lastStoredEventId();
 }

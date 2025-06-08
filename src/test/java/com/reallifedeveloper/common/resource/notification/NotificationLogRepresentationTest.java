@@ -1,10 +1,13 @@
 package com.reallifedeveloper.common.resource.notification;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.reallifedeveloper.common.application.notification.Notification;
 import com.reallifedeveloper.common.application.notification.NotificationLog;
@@ -15,7 +18,7 @@ import com.reallifedeveloper.common.infrastructure.GsonObjectSerializer;
 
 public class NotificationLogRepresentationTest {
 
-    private ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
+    private final ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
 
     @Test
     public void constructor() {
@@ -23,29 +26,38 @@ public class NotificationLogRepresentationTest {
         String next = "bar";
         String previous = "baz";
         List<Notification> notifications = new ArrayList<>();
-        notifications.add(new Notification(new TestEvent(1, "foo"), 4711L));
+        notifications.add(Notification.create(new TestEvent(1, "foo"), 4711L));
         NotificationLog notificationLog = createNotificationLog(new ArrayList<>(), 1, 10, true);
-        NotificationLogRepresentation notificationLogRepresentation =
-                new NotificationLogRepresentation(notificationLog, objectSerializer);
+        NotificationLogRepresentation notificationLogRepresentation = new NotificationLogRepresentation(notificationLog,
+                objectSerializer);
+
         notificationLogRepresentation.setSelf(self);
         notificationLogRepresentation.setNext(next);
         notificationLogRepresentation.setPrevious(previous);
-        Assert.assertEquals("Wrong self link: ", self, notificationLogRepresentation.getSelf());
-        Assert.assertEquals("Wrong next link: ", next, notificationLogRepresentation.getNext());
-        Assert.assertEquals("Wrong previous link: ", previous, notificationLogRepresentation.getPrevious());
-        Assert.assertEquals("Wrong number of notifications: ", 0, notificationLogRepresentation.notifications().size());
-        Assert.assertTrue("Archived flag should be true", notificationLogRepresentation.isArchived());
+
+        assertEquals(self, notificationLogRepresentation.getSelf(), "Wrong self link");
+        assertEquals(next, notificationLogRepresentation.getNext(), "Wrong next link");
+        assertEquals(previous, notificationLogRepresentation.getPrevious(), "Wrong previous link");
+        assertEquals(0, notificationLogRepresentation.notifications().size(),
+                "Wrong number of notifications");
+        assertTrue(notificationLogRepresentation.isArchived(), "Archived flag should be true");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullNotificationLog() {
-        new NotificationLogRepresentation(null, objectSerializer);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> new NotificationLogRepresentation(null, objectSerializer));
+        assertEquals("Arguments must not be null: notificationLog=null, objectSerializer=" + objectSerializer,
+                exception.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullSerializer() {
         NotificationLog notificationLog = createNotificationLog(new ArrayList<>(), 1, 10, false);
-        new NotificationLogRepresentation(notificationLog, null);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> new NotificationLogRepresentation(notificationLog, null));
+        assertEquals("Arguments must not be null: notificationLog=" + notificationLog + ", objectSerializer=null",
+                exception.getMessage());
     }
 
     private NotificationLog createNotificationLog(List<Notification> notifications, int low, int high,
@@ -53,8 +65,8 @@ public class NotificationLogRepresentationTest {
         int batchSize = high - low + 1;
         NotificationLogId currentNotificationLogId = new NotificationLogId(low + "," + high);
         NotificationLogId nextNotificationLogId = new NotificationLogId((low + batchSize) + "," + (high + batchSize));
-        NotificationLogId previousNotificationLogId =
-                new NotificationLogId((low - batchSize) + "," + (high - batchSize));
+        NotificationLogId previousNotificationLogId = new NotificationLogId(
+                (low - batchSize) + "," + (high - batchSize));
         return new NotificationLog(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId,
                 notifications, isArchived);
     }

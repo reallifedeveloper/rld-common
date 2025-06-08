@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HEAD;
+import jakarta.ws.rs.OPTIONS;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
 
 /**
  * A JAX-RS resource that can be used for testing REST clients. This resource accepts all requests,
@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response;
  * @author RealLifeDeveloper
  */
 @Path("/{path:.*}")
-public class TestResource extends AbstractResource {
+public class TestResource extends BaseResource {
 
     private List<RequestInfo> requests = new ArrayList<>();
     private List<Response> responses;
@@ -91,7 +91,7 @@ public class TestResource extends AbstractResource {
      * Gives a list of {@link RequestInfo} objects representing the requests that have reached
      * this resource.
      *
-     * @return a list of <code>RequestInfo</code> objects
+     * @return a list of {@code RequestInfo} objects
      */
     public List<RequestInfo> requests() {
         return requests;
@@ -106,12 +106,12 @@ public class TestResource extends AbstractResource {
         private String data;
 
         /**
-         * Creates a new <code>RequestInfo</code> object using the given path and method.
+         * Creates a new {@code RequestInfo} object using the given path and method.
          *
          * @param path the path of the request, not including the base URI
          * @param method the HTTP method of the request, e.g., "GET", "POST", "PUT" and so on
          * @param data the data that was sent in the body of this request if it is a POST or PUT request,
-         * otherwise <code>null</code>
+         * otherwise {@code null}
          */
         public RequestInfo(String path, String method, String data) {
             this.path = path;
@@ -139,9 +139,9 @@ public class TestResource extends AbstractResource {
 
         /**
          * Gives the data that was sent in the body of this request if it is a POST or PUT request,
-         * otherwise <code>null</code>.
+         * otherwise {@code null}.
          *
-         * @return the data that was sent in the body of this request, or <code>null</code>
+         * @return the data that was sent in the body of this request, or {@code null}
          */
         public String data() {
             return data;

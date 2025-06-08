@@ -2,8 +2,8 @@ package com.reallifedeveloper.common.application.notification;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.reallifedeveloper.common.application.eventstore.EventStore;
 import com.reallifedeveloper.common.application.eventstore.InMemoryStoredEventRepository;
@@ -18,12 +18,10 @@ public class NotificationServiceTest {
     private InMemoryStoredEventRepository storedEventRepository = new InMemoryStoredEventRepository();
     private ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
     private EventStore eventStore = new EventStore(objectSerializer, storedEventRepository);
-    private InMemoryPublishedMessageTrackerRepository messageTrackerRepository =
-            new InMemoryPublishedMessageTrackerRepository();
+    private InMemoryPublishedMessageTrackerRepository messageTrackerRepository = new InMemoryPublishedMessageTrackerRepository();
     private TestNotificationPublisher notificationPublisher = new TestNotificationPublisher();
 
-    private NotificationService service =
-            new NotificationService(eventStore, messageTrackerRepository, notificationPublisher);
+    private NotificationService service = new NotificationService(eventStore, messageTrackerRepository, notificationPublisher);
 
     @Test
     public void currentNotificationLog() {
@@ -33,14 +31,11 @@ public class NotificationServiceTest {
         }
         int batchSize = 5;
         NotificationLog notificationLog = service.currentNotificationLog(batchSize);
-        Assert.assertEquals("Wrong current notification id: ", "11,15",
-                notificationLog.currentNotificationLogId().externalForm());
-        Assert.assertNull("Next notification id should be null", notificationLog.nextNotificationLogId());
-        Assert.assertEquals("Wrong previous notification id: ", "6,10",
-                notificationLog.previousNotificationLogId().externalForm());
-        Assert.assertEquals("Wrong number of notifications: ", numEvents % batchSize,
-                notificationLog.notifications().size());
-        Assert.assertFalse("Notification log should not be archived", notificationLog.isArchived());
+        Assertions.assertEquals("11,15", notificationLog.current().externalForm(), "Wrong current notification id");
+        Assertions.assertFalse(notificationLog.next().isPresent(), "Next notification id should not be present");
+        Assertions.assertEquals("6,10", notificationLog.previous().get().externalForm(), "Wrong previous notification id");
+        Assertions.assertEquals(numEvents % batchSize, notificationLog.notifications().size(), "Wrong number of notifications");
+        Assertions.assertFalse(notificationLog.isArchived(), "Notification log should not be archived");
     }
 
     @Test
@@ -51,25 +46,22 @@ public class NotificationServiceTest {
         }
         int batchSize = 5;
         NotificationLog notificationLog = service.currentNotificationLog(batchSize);
-        Assert.assertEquals("Wrong current notification id: ", "11,15",
-                notificationLog.currentNotificationLogId().externalForm());
-        Assert.assertNull("Next notification id should be null", notificationLog.nextNotificationLogId());
-        Assert.assertEquals("Wrong previous notification id: ", "6,10",
-                notificationLog.previousNotificationLogId().externalForm());
-        Assert.assertEquals("Wrong number of notifications: ", 5, notificationLog.notifications().size());
-        Assert.assertTrue("Notification log should be archived", notificationLog.isArchived());
+        Assertions.assertEquals("11,15", notificationLog.current().externalForm(), "Wrong current notification id");
+        Assertions.assertFalse(notificationLog.next().isPresent(), "Next notification id should not be present");
+        Assertions.assertEquals("6,10", notificationLog.previous().get().externalForm(), "Wrong previous notification id");
+        Assertions.assertEquals(5, notificationLog.notifications().size(), "Wrong number of notifications");
+        Assertions.assertTrue(notificationLog.isArchived(), "Notification log should be archived");
     }
 
     @Test
     public void currentNotificationLogNoNotifications() {
         int batchSize = 5;
         NotificationLog notificationLog = service.currentNotificationLog(batchSize);
-        Assert.assertEquals("Wrong current notification id: ", "1," + batchSize,
-                notificationLog.currentNotificationLogId().externalForm());
-        Assert.assertNull("Next notification id should be null", notificationLog.nextNotificationLogId());
-        Assert.assertNull("Previous notification id should be null", notificationLog.previousNotificationLogId());
-        Assert.assertTrue("Notifications should be empty", notificationLog.notifications().isEmpty());
-        Assert.assertFalse("Notification log should not be archived", notificationLog.isArchived());
+        Assertions.assertEquals("1," + batchSize, notificationLog.current().externalForm(), "Wrong current notification id");
+        Assertions.assertFalse(notificationLog.next().isPresent(), "Next notification id should not be present");
+        Assertions.assertFalse(notificationLog.previous().isPresent(), "Previous notification id should not be present");
+        Assertions.assertTrue(notificationLog.notifications().isEmpty(), "Notifications should be empty");
+        Assertions.assertFalse(notificationLog.isArchived(), "Notification log should not be archived");
     }
 
     @Test
@@ -82,14 +74,11 @@ public class NotificationServiceTest {
         int batchSize = 5;
         NotificationLogId notificationLogId = new NotificationLogId(firstEventToGet, firstEventToGet + batchSize - 1);
         NotificationLog notificationLog = service.notificationLog(notificationLogId);
-        Assert.assertEquals("Wrong current notification id: ", "6,10",
-                notificationLog.currentNotificationLogId().externalForm());
-        Assert.assertEquals("Wrong next notification id: ", "11,15",
-                notificationLog.nextNotificationLogId().externalForm());
-        Assert.assertEquals("Wrong previous notification id: ", "1,5",
-                notificationLog.previousNotificationLogId().externalForm());
-        Assert.assertEquals("Wrong number of notifications: ", batchSize, notificationLog.notifications().size());
-        Assert.assertTrue("Notification log should be archived", notificationLog.isArchived());
+        Assertions.assertEquals("6,10", notificationLog.current().externalForm(), "Wrong current notification id");
+        Assertions.assertEquals("11,15", notificationLog.next().get().externalForm(), "Wrong next notification id");
+        Assertions.assertEquals("1,5", notificationLog.previous().get().externalForm(), "Wrong previous notification id");
+        Assertions.assertEquals(batchSize, notificationLog.notifications().size(), "Wrong number of notifications");
+        Assertions.assertTrue(notificationLog.isArchived(), "Notification log should be archived");
     }
 
     @Test
@@ -98,13 +87,11 @@ public class NotificationServiceTest {
         int batchSize = 5;
         NotificationLogId notificationLogId = new NotificationLogId(firstEventToGet, firstEventToGet + batchSize - 1);
         NotificationLog notificationLog = service.notificationLog(notificationLogId);
-        Assert.assertEquals("Wrong current notification id: ", "6,10",
-                notificationLog.currentNotificationLogId().externalForm());
-        Assert.assertNull("Next notification id should be null", notificationLog.nextNotificationLogId());
-        Assert.assertEquals("Wrong previous notification id: ", "1,5",
-                notificationLog.previousNotificationLogId().externalForm());
-        Assert.assertTrue("Notifications should be empty", notificationLog.notifications().isEmpty());
-        Assert.assertFalse("Notification log should not be archived", notificationLog.isArchived());
+        Assertions.assertEquals("6,10", notificationLog.current().externalForm(), "Wrong current notification id");
+        Assertions.assertFalse(notificationLog.next().isPresent(), "Next notification id should not be present");
+        Assertions.assertEquals("1,5", notificationLog.previous().get().externalForm(), "Wrong previous notification id");
+        Assertions.assertTrue(notificationLog.notifications().isEmpty(), "Notifications should be empty");
+        Assertions.assertFalse(notificationLog.isArchived(), "Notification log should not be archived");
     }
 
     @Test
@@ -118,7 +105,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void publishSameNotificationsTwice() throws Exception  {
+    public void publishSameNotificationsTwice() throws Exception {
         int numEvents = 3;
         for (int i = 0; i < numEvents; i++) {
             eventStore.add(new TestEvent(i + 1, "foo" + (i + 1)));
@@ -130,7 +117,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void publishNotificatonisTwiceWithSomeNewEvents() throws Exception {
+    public void publishNotificationsTwiceWithSomeNewEvents() throws Exception {
         int numEvents = 3;
         for (int i = 0; i < numEvents; i++) {
             eventStore.add(new TestEvent(i + 1, "foo" + (i + 1)));
@@ -142,35 +129,35 @@ public class NotificationServiceTest {
         verifyPublishedNotifications(PUBLICATION_CHANNEL, numEvents + 1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullEventStore() {
-        new NotificationService(null, messageTrackerRepository, notificationPublisher);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructorNullMessageTrackerRepository() {
-        new NotificationService(eventStore, null, notificationPublisher);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructorNullNotificationPublisher() {
-        new NotificationService(eventStore, messageTrackerRepository, null);
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new NotificationService(null, messageTrackerRepository, notificationPublisher),
+            "Expected IllegalArgumentException for null EventStore");
     }
 
     @Test
-    public void noArgsConstructor() {
-        new NotificationService();
+    public void constructorNullMessageTrackerRepository() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new NotificationService(eventStore, null, notificationPublisher),
+            "Expected IllegalArgumentException for null MessageTrackerRepository");
+    }
+
+    @Test
+    public void constructorNullNotificationPublisher() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new NotificationService(eventStore, messageTrackerRepository, null),
+            "Expected IllegalArgumentException for null NotificationPublisher");
     }
 
     private void verifyPublishedNotifications(String publicationChannel, int numNotifications) {
         List<Notification> notifications = notificationPublisher.publishedNotifications(publicationChannel);
-        Assert.assertEquals("Wrong number of notifications: ", numNotifications, notifications.size());
+        Assertions.assertEquals(numNotifications, notifications.size(), "Wrong number of notifications");
         for (int i = 0; i < notifications.size(); i++) {
             Notification notification = notifications.get(i);
-            Assert.assertEquals("Wrong stored event ID: ", i + 1, notification.storedEventId());
-            Assert.assertEquals("Wrong event type: ", TestEvent.class.getName(), notification.eventType());
-            Assert.assertEquals("Wrong type of domain event: ", TestEvent.class, notification.event().getClass());
+            Assertions.assertEquals(i + 1, notification.storedEventId().longValue(), "Wrong stored event ID");
+            Assertions.assertEquals(TestEvent.class.getName(), notification.eventType(), "Wrong event type");
+            Assertions.assertEquals(TestEvent.class, notification.event().getClass(), "Wrong type of domain event");
         }
-
     }
 }

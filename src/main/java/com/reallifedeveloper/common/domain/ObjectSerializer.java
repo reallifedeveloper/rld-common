@@ -14,11 +14,11 @@ public interface ObjectSerializer<T extends Serializable> {
     /**
      * Converts an object to its serialized form.
      * <p>
-     * The implementation should support serializing <code>null</code> values.
+     * The implementation should support serializing {@code null} values.
      *
-     * @param object the object to serialize, can be <code>null</code>
+     * @param object the object to serialize, can be {@code null}
      *
-     * @return the serialized representation of <code>object</code>
+     * @return the serialized representation of {@code object}
      */
     T serialize(Object object);
 
@@ -26,12 +26,12 @@ public interface ObjectSerializer<T extends Serializable> {
      * Given the serialized representation of an object, converts it back to the object.
      *
      * @param serializedObject the serialized form of an object
-     * @param objectType the concrete class of the serialized object
-     * @param <U> the type of the object
+     * @param objectType       the concrete class of the serialized object
+     * @param <U>              the type of the object
      *
-     * @return the object represented by <code>serializedObject</code>
+     * @return the object represented by {@code serializedObject}
      *
-     * @throws IllegalArgumentException if any argument is <code>null</code>
+     * @throws IllegalArgumentException if any argument is {@code null}
      */
     <U> U deserialize(T serializedObject, Class<U> objectType);
 

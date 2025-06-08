@@ -19,7 +19,7 @@ public interface DomainEventPublisher {
      * Registers an event handler with this publisher.
      *
      * @param subscriber the event handler to register
-     * @throws IllegalArgumentException if <code>subscriber</code> is <code>null</code>
+     * @throws IllegalArgumentException if {@code subscriber} is {@code null}
      */
     void subscribe(DomainEventSubscriber<? extends DomainEvent> subscriber);
 

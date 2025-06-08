@@ -5,26 +5,29 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import com.reallifedeveloper.common.domain.ErrorHandling;
+
 /**
  * An implementation of the JMX {@link ConnectionPoolConfiguratorMXBean} interface that delegates to an
- * <code>org.apache.tomcat.jdbc.pool.DataSource</code> object.
+ * {@code org.apache.tomcat.jdbc.pool.DataSource} object.
  *
  * @author RealLifeDeveloper
  */
 @ManagedResource(description = "Connection Pool Configuration")
-public class TomcatConnectionPoolConfigurator implements ConnectionPoolConfiguratorMXBean {
+public final class TomcatConnectionPoolConfigurator implements ConnectionPoolConfiguratorMXBean {
 
-    private DataSource ds;
+    private final DataSource ds;
 
     /**
-     * Creates a new <code>TomcatConnectionPoolConfigurator</code> that delegates to the given data source.
+     * Creates a new {@code TomcatConnectionPoolConfigurator} that delegates to the given data source.
      *
      * @param ds the data source to delegate to
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public TomcatConnectionPoolConfigurator(DataSource ds) {
-        if (ds == null) {
-            throw new IllegalArgumentException("ds must not be null");
-        }
+        ErrorHandling.checkNull("ds must not be null", ds);
         this.ds = ds;
     }
 

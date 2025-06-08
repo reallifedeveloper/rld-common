@@ -1,28 +1,31 @@
 package com.reallifedeveloper.common.infrastructure.jmx;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 
 public class ServletContextSystemInfoTest {
 
     @Test
-    public void setServletContext() {
+    public void testSetServletContext() {
         MockServletContext servletContext = new MockServletContext("file:src/test/resources");
         ServletContextSystemInfo systemInfo = new ServletContextSystemInfo();
         systemInfo.setServletContext(servletContext);
-        Assert.assertEquals("Wrong build time: ", "2014-08-27T14:20:05+0000", systemInfo.getBuildTime());
-        Assert.assertEquals("Wrong SCM revision: ", "4711", systemInfo.getScmRevision());
-        Assert.assertEquals("Wrong version: ", "1.0-SNAPSHOT", systemInfo.getVersion());
+
+        assertEquals("2014-08-27T14:20:05+0000", systemInfo.getBuildTime(), "Unexpected build time");
+        assertEquals("4711", systemInfo.getScmRevision(), "Unexpected SCM revision");
+        assertEquals("1.0-SNAPSHOT", systemInfo.getVersion(), "Unexpected version");
     }
 
     @Test
-    public void setServletContextNullContext() {
+    public void testSetServletContextWithNullContext() {
         ServletContextSystemInfo systemInfo = new ServletContextSystemInfo();
-        // Make sure we don't get an exception
         systemInfo.setServletContext(null);
-        Assert.assertNull("Build time should be null", systemInfo.getBuildTime());
-        Assert.assertNull("SCM revision should be null", systemInfo.getScmRevision());
-        Assert.assertNull("Version should be null", systemInfo.getVersion());
+
+        assertNull(systemInfo.getBuildTime(), "Build time should be null");
+        assertNull(systemInfo.getScmRevision(), "SCM revision should be null");
+        assertNull(systemInfo.getVersion(), "Version should be null");
     }
 }

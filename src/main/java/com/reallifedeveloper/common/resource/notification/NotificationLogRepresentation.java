@@ -1,36 +1,39 @@
 package com.reallifedeveloper.common.resource.notification;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.reallifedeveloper.common.application.notification.Notification;
 import com.reallifedeveloper.common.application.notification.NotificationLog;
+import com.reallifedeveloper.common.domain.ErrorHandling;
 import com.reallifedeveloper.common.domain.ObjectSerializer;
 
 /**
- * A REST-ful representation of a {@link NotificationLog}, containing links to
- * resources to get related representations.
+ * A REST-ful representation of a {@link NotificationLog}, containing links to resources to get related representations.
  *
  * @author RealLifeDeveloper
  */
 @XmlRootElement(name = "NotificationLog")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class NotificationLogRepresentation {
+public final class NotificationLogRepresentation {
 
     @XmlElement(name = "next")
-    private String next;
+    private @Nullable String next;
 
     @XmlElement(name = "self")
-    private String self;
+    private @Nullable String self;
 
     @XmlElement(name = "previous")
-    private String previous;
+    private @Nullable String previous;
 
     @XmlElement(name = "isArchived")
     private boolean isArchived;
@@ -40,17 +43,14 @@ public class NotificationLogRepresentation {
     private final List<NotificationRepresentation> notifications = new ArrayList<>();
 
     /**
-     * Creates a new <code>NotificationLogRepresentation</code> representing the given {@link NotificationLog},
-     * and using the given {@link ObjectSerializer} to serialize the domain events.
+     * Creates a new {@code NotificationLogRepresentation} representing the given {@link NotificationLog}, and using the given
+     * {@link ObjectSerializer} to serialize the domain events.
      *
-     * @param notificationLog the notification log to represent
+     * @param notificationLog  the notification log to represent
      * @param objectSerializer the object serializer to use to serialize domain events
      */
     public NotificationLogRepresentation(NotificationLog notificationLog, ObjectSerializer<String> objectSerializer) {
-        if (notificationLog == null || objectSerializer == null) {
-            throw new IllegalArgumentException("Arguments must not be null: notificationLog=" + notificationLog
-                    + ", objectSerializer=" + objectSerializer);
-        }
+        ErrorHandling.checkNull("Arguments must not be null: notificationLog=%s, objectSerializer=%s", notificationLog, objectSerializer);
         for (Notification notification : notificationLog.notifications()) {
             notifications.add(new NotificationRepresentation(notification, objectSerializer));
         }
@@ -60,7 +60,7 @@ public class NotificationLogRepresentation {
     /**
      * Required by JAXB.
      */
-    NotificationLogRepresentation() {
+    /* package-private */ NotificationLogRepresentation() {
         super();
     }
 
@@ -69,7 +69,7 @@ public class NotificationLogRepresentation {
      *
      * @return a canonical link to the current set of notifications
      */
-    public String getSelf() {
+    public @Nullable String getSelf() {
         return self;
     }
 
@@ -87,7 +87,7 @@ public class NotificationLogRepresentation {
      *
      * @return a canonical link to the next set of notifications
      */
-    public String getNext() {
+    public @Nullable String getNext() {
         return next;
     }
 
@@ -105,7 +105,7 @@ public class NotificationLogRepresentation {
      *
      * @return a canonical link to the previous set of notifications
      */
-    public String getPrevious() {
+    public @Nullable String getPrevious() {
         return previous;
     }
 
@@ -119,19 +119,18 @@ public class NotificationLogRepresentation {
     }
 
     /**
-     * Gives a the notifications represented.
+     * Gives the notifications represented.
      *
      * @return the notifications represented
      */
     public List<NotificationRepresentation> notifications() {
-        return notifications;
+        return Collections.unmodifiableList(notifications);
     }
 
     /**
      * Shows if this represents an archived notification log or not.
      *
-     * @return <code>true</code> if this represents an archived notification
-     *         log, <code>false</code> otherwise
+     * @return {@code true} if this represents an archived notification log, {@code false} otherwise
      */
     public boolean isArchived() {
         return isArchived;

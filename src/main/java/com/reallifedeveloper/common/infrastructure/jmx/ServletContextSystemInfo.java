@@ -4,21 +4,21 @@ import java.io.InputStream;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import javax.servlet.ServletContext;
-
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.web.context.ServletContextAware;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.ServletContext;
+
 /**
- * An implementation of the JMX {@link SystemInfoMXBean} interface that reads the system information
- * from a manifest file in a WAR file.
+ * An implementation of the JMX {@link SystemInfoMXBean} interface that reads the system information from a manifest file in a WAR file.
  * <p>
- * This class expects to be configured as a Spring bean in a web application so that the
- * {@link #setServletContext(ServletContext)} method is called automatically. If you want to
- * use this class outside of Spring, you are responsible for calling this method.
+ * This class expects to be configured as a Spring bean in a web application so that the {@link #setServletContext(ServletContext)} method
+ * is called automatically. If you want to use this class outside of Spring, you are responsible for calling this method.
  *
  * @author RealLifeDeveloper
  */
@@ -31,29 +31,31 @@ public class ServletContextSystemInfo implements SystemInfoMXBean, ServletContex
 
     private static final Logger LOG = LoggerFactory.getLogger(ServletContextSystemInfo.class);
 
-    private String version;
-    private String buildTime;
-    private String scmRevision;
+    private @Nullable String version;
+    private @Nullable String buildTime;
+    private @Nullable String scmRevision;
 
     @Override
     @ManagedAttribute(description = "System version")
-    public String getVersion() {
+    public @Nullable String getVersion() {
         return version;
     }
 
     @Override
     @ManagedAttribute(description = "Date and time that the system was built")
-    public String getBuildTime() {
+    public @Nullable String getBuildTime() {
         return buildTime;
     }
 
     @Override
     @ManagedAttribute(description = "System revision number in version control")
-    public String getScmRevision() {
+    public @Nullable String getScmRevision() {
         return scmRevision;
     }
 
     @Override
+    @SuppressWarnings({ "PMD.AvoidCatchingGenericException", "PMD.LooseCoupling" })
+    @SuppressFBWarnings("REC_CATCH_EXCEPTION")
     public void setServletContext(ServletContext servletContext) {
         try (InputStream in = servletContext.getResourceAsStream("/META-INF/MANIFEST.MF")) {
             Manifest manifest = new Manifest(in);
@@ -64,7 +66,7 @@ public class ServletContextSystemInfo implements SystemInfoMXBean, ServletContex
             LOG.info("buildTime=" + buildTime);
             scmRevision = attributes.getValue(SCM_REVISION_MANIFEST_ENTRY);
             LOG.info("scmRevision=" + scmRevision);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOG.error("Failed to read META-INF/MANIFEST.MF: " + e);
         }
     }

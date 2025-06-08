@@ -6,11 +6,13 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import com.reallifedeveloper.common.application.eventstore.EventStore;
 import com.reallifedeveloper.common.application.eventstore.StoredEvent;
+import com.reallifedeveloper.common.domain.ErrorHandling;
 
 /**
  * An application service to work with {@link NotificationLog NotificationLogs}.
@@ -21,41 +23,29 @@ public class NotificationService {
 
     private static final Logger LOG = LoggerFactory.getLogger(NotificationService.class);
 
-    @Autowired
-    private EventStore eventStore;
+    private final EventStore eventStore;
 
-    @Autowired
-    private PublishedMessageTrackerRepository messageTrackerRepository;
+    private final PublishedMessageTrackerRepository messageTrackerRepository;
 
-    @Autowired
-    private NotificationPublisher notificationPublisher;
+    private final NotificationPublisher notificationPublisher;
 
     /**
-     * Creates a new <code>NotificationService</code> that uses the given components.
+     * Creates a new {@code NotificationService} that uses the given components.
      *
-     * @param eventStore an event store for finding stored domain events
+     * @param eventStore               an event store for finding stored domain events
      * @param messageTrackerRepository a repository for keeping track of the last notification published
-     * @param notificationPublisher a publisher of notifications to external systems
+     * @param notificationPublisher    a publisher of notifications to external systems
      *
-     * @throws IllegalArgumentException if any argument is <code>null</code>
+     * @throws IllegalArgumentException if any argument is {@code null}
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public NotificationService(EventStore eventStore, PublishedMessageTrackerRepository messageTrackerRepository,
             NotificationPublisher notificationPublisher) {
-        if (eventStore == null || messageTrackerRepository == null || notificationPublisher == null) {
-            throw new IllegalArgumentException("Arguments must not be null: eventStore=" + eventStore
-                    + ", messageTrackerRepository=" + messageTrackerRepository
-                    + ", notificationPublisher=" + notificationPublisher);
-        }
+        ErrorHandling.checkNull("Arguments must not be null: eventStore=%s, messageTrackerRepository=%s, notificationPublisher=%s",
+                eventStore, messageTrackerRepository, notificationPublisher);
         this.eventStore = eventStore;
         this.messageTrackerRepository = messageTrackerRepository;
         this.notificationPublisher = notificationPublisher;
-    }
-
-    /**
-     * Used by Spring to configure the object.
-     */
-    NotificationService() {
-        super();
     }
 
     /**
@@ -79,11 +69,12 @@ public class NotificationService {
      *
      * @param notificationLogId represents the first and last {@link Notification} in the log
      *
-     * @return an archived <code>NotificationLog</code>
+     * @return an archived {@code NotificationLog}
      */
     @Transactional(readOnly = true)
     public NotificationLog notificationLog(NotificationLogId notificationLogId) {
         LOG.trace("notificationLog: notificationLogId={}", notificationLogId);
+        ErrorHandling.checkNull("notificationLogId must not be null", notificationLogId);
         NotificationLog notificationLog = findNotificationLog(notificationLogId);
         LOG.trace("notificationLog: {}", notificationLog);
         return notificationLog;
@@ -95,14 +86,12 @@ public class NotificationService {
         boolean archivedIndicator = notificationLogId.high() <= lastStoredEventId;
         NotificationLogId next = notificationLogId.high() < lastStoredEventId ? notificationLogId.next() : null;
         NotificationLogId previous = notificationLogId.low() > 1 ? notificationLogId.previous() : null;
-        NotificationLog notificationLog = new NotificationLog(notificationLogId, next, previous,
-                notificationsFrom(storedEvents), archivedIndicator);
-        return notificationLog;
+        return new NotificationLog(notificationLogId, next, previous, notificationsFrom(storedEvents), archivedIndicator);
     }
 
     private NotificationLogId calculateCurrentNotificationLogId(int batchSize) {
         long count = eventStore.lastStoredEventId();
-        long remainder = count %  batchSize;
+        long remainder = count % batchSize;
         if (remainder == 0) {
             remainder = batchSize;
         }
@@ -124,8 +113,7 @@ public class NotificationService {
     }
 
     /**
-     * Publishes notifications about all events that have occurred since the last publication to the given
-     * publication channel.
+     * Publishes notifications about all events that have occurred since the last publication to the given publication channel.
      *
      * @param publicationChannel the name of the publication channel to publish notifications on
      *
@@ -142,11 +130,8 @@ public class NotificationService {
     }
 
     private PublishedMessageTracker messageTracker(String publicationChannel) {
-        PublishedMessageTracker messageTracker = messageTrackerRepository.findByPublicationChannel(publicationChannel);
-        if (messageTracker == null) {
-            messageTracker = new PublishedMessageTracker(0, publicationChannel);
-        }
-        return messageTracker;
+        return messageTrackerRepository.findByPublicationChannel(publicationChannel)
+                .orElseGet(() -> new PublishedMessageTracker(0, publicationChannel));
     }
 
     private List<Notification> unpublishedNotifications(long lastPublishedMessageId) {
@@ -161,4 +146,18 @@ public class NotificationService {
             messageTrackerRepository.save(messageTracker);
         }
     }
+
+    /**
+     * Make finalize method final to avoid "Finalizer attacks" and corresponding SpotBugs warning (CT_CONSTRUCTOR_THROW).
+     *
+     * @see <a href="https://wiki.sei.cmu.edu/confluence/display/java/OBJ11-J.+Be+wary+of+letting+constructors+throw+exceptions">
+     *      Explanation of finalizer attack</a>
+     */
+    @Override
+    @Deprecated
+    @SuppressWarnings({ "checkstyle:NoFinalizer", "PMD.EmptyFinalizer", "PMD.EmptyMethodInAbstractClassShouldBeAbstract" })
+    protected final void finalize() throws Throwable {
+        // Do nothing
+    }
+
 }

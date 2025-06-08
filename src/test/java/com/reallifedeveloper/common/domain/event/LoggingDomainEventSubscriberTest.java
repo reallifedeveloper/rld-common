@@ -1,39 +1,35 @@
 package com.reallifedeveloper.common.domain.event;
 
-import java.util.Date;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import java.time.ZonedDateTime;
 
-import com.reallifedeveloper.tools.test.Log4jTestAppender;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.reallifedeveloper.tools.test.LogbackTestUtil;
 
 public class LoggingDomainEventSubscriberTest {
 
-    private Log4jTestAppender testAppender = new Log4jTestAppender();
-
-    @Before
+    @BeforeEach
     public void init() throws Exception {
-        testAppender.setThreshold(Level.INFO);
-        Logger.getRootLogger().addAppender(testAppender);
+        LogbackTestUtil.clearLoggingEvents();
     }
 
     @Test
     public void handleEvent() {
         LoggingDomainEventSubscriber subscriber = new LoggingDomainEventSubscriber();
-        TestEvent event = new TestEvent(42, "foo", new Date(), 1);
-        Assert.assertTrue("There should be no logging events", testAppender.loggingEvents().isEmpty());
+        TestEvent event = new TestEvent(42, "foo", ZonedDateTime.now(), 1);
+        assertTrue(LogbackTestUtil.getLoggingEvents().isEmpty(), "There should be no logging events");
         subscriber.handleEvent(event);
-        Assert.assertEquals("Wrong number of logging events: ", 1, testAppender.loggingEvents().size());
-        Assert.assertEquals("Wrong log message: ", event.toString(), testAppender.loggingEvents().get(0)
-                .getMessage());
+        assertEquals(1, LogbackTestUtil.getLoggingEvents().size(), "Wrong number of logging events: ");
+        assertEquals(event.toString(), LogbackTestUtil.getLoggingEvents().get(0).getMessage(), "Wrong log message: ");
     }
 
     @Test
     public void eventType() {
         LoggingDomainEventSubscriber subscriber = new LoggingDomainEventSubscriber();
-        Assert.assertEquals("Wrong event type: ", DomainEvent.class, subscriber.eventType());
+        assertEquals(DomainEvent.class, subscriber.eventType(), "Wrong event type: ");
     }
 }

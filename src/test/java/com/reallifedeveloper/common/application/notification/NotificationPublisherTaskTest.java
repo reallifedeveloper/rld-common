@@ -1,11 +1,17 @@
 package com.reallifedeveloper.common.application.notification;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import com.reallifedeveloper.common.application.eventstore.EventStore;
+import com.reallifedeveloper.common.application.eventstore.InMemoryStoredEventRepository;
+import com.reallifedeveloper.common.infrastructure.GsonObjectSerializer;
 
 public class NotificationPublisherTaskTest {
 
@@ -15,20 +21,14 @@ public class NotificationPublisherTaskTest {
     public void run() {
         TestNotificationService notificationService = new TestNotificationService();
         NotificationPublisherTask task = new NotificationPublisherTask(PUBLICATION_CHANNEL, notificationService);
-        Assert.assertEquals("Wrong number of calls to publishNotifications", 0,
-                notificationService.publicationChannelsUsed.size());
+        assertEquals(0, notificationService.publicationChannelsUsed.size(), "Wrong number of calls to publishNotifications");
         task.run();
-        Assert.assertEquals("Wrong number of calls to publishNotifications", 1,
-                notificationService.publicationChannelsUsed.size());
-        Assert.assertEquals("Wrong publication channel: ", PUBLICATION_CHANNEL,
-                notificationService.publicationChannelsUsed.get(0));
+        assertEquals(1, notificationService.publicationChannelsUsed.size(), "Wrong number of calls to publishNotifications");
+        assertEquals(PUBLICATION_CHANNEL, notificationService.publicationChannelsUsed.get(0), "Wrong publication channel");
         task.run();
-        Assert.assertEquals("Wrong number of calls to publishNotifications", 2,
-                notificationService.publicationChannelsUsed.size());
-        Assert.assertEquals("Wrong publication channel: ", PUBLICATION_CHANNEL,
-                notificationService.publicationChannelsUsed.get(0));
-        Assert.assertEquals("Wrong publication channel: ", PUBLICATION_CHANNEL,
-                notificationService.publicationChannelsUsed.get(1));
+        assertEquals(2, notificationService.publicationChannelsUsed.size(), "Wrong number of calls to publishNotifications");
+        assertEquals(PUBLICATION_CHANNEL, notificationService.publicationChannelsUsed.get(0), "Wrong publication channel");
+        assertEquals(PUBLICATION_CHANNEL, notificationService.publicationChannelsUsed.get(1), "Wrong publication channel");
     }
 
     @Test
@@ -37,38 +37,32 @@ public class NotificationPublisherTaskTest {
         notificationService.setIoException(new IOException("bar"));
         NotificationPublisherTask task = new NotificationPublisherTask(PUBLICATION_CHANNEL, notificationService);
         task.run();
-        Assert.assertEquals("Wrong number of calls to publishNotifications", 1,
-                notificationService.publicationChannelsUsed.size());
+        assertEquals(1, notificationService.publicationChannelsUsed.size(), "Wrong number of calls to publishNotifications");
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void runWithNullPointerException() {
         TestNotificationService notificationService = new TestNotificationService();
         notificationService.setRuntimeException(new NullPointerException("baz"));
         NotificationPublisherTask task = new NotificationPublisherTask(PUBLICATION_CHANNEL, notificationService);
-        task.run();
+        assertThrows(NullPointerException.class, task::run, "Expected NullPointerException to be thrown");
     }
 
-    @Test(expected = NullPointerException.class)
-    public void singleArgumentConstructor() {
-        NotificationPublisherTask task = new NotificationPublisherTask(PUBLICATION_CHANNEL);
-        task.run();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorPublicationChannelNull() {
         TestNotificationService notificationService = new TestNotificationService();
-        new NotificationPublisherTask(null, notificationService);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> new NotificationPublisherTask(null, notificationService),
+                "Expected IllegalArgumentException for null publication channel");
+        assertEquals("Arguments must not be null: publicationChannel=null, notificationService=" + notificationService, e.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNotificationServiceNull() {
-        new NotificationPublisherTask(PUBLICATION_CHANNEL, null);
-    }
+        Exception e = assertThrows(IllegalArgumentException.class, () -> new NotificationPublisherTask(PUBLICATION_CHANNEL, null),
+                "Expected IllegalArgumentException for null notification service");
+        assertEquals("Arguments must not be null: publicationChannel=" + PUBLICATION_CHANNEL + ", notificationService=null",
+                e.getMessage());
 
-    @Test(expected = IllegalArgumentException.class)
-    public void singleArgumentConstructorPublicationChannelNull() {
-        new NotificationPublisherTask(null);
     }
 
     private static class TestNotificationService extends NotificationService {
@@ -76,6 +70,11 @@ public class NotificationPublisherTaskTest {
         private IOException ioException;
         private RuntimeException runtimeException;
         private List<String> publicationChannelsUsed = new ArrayList<>();
+
+        TestNotificationService() {
+            super(new EventStore(new GsonObjectSerializer(), new InMemoryStoredEventRepository()),
+                    new InMemoryPublishedMessageTrackerRepository(), new TestNotificationPublisher());
+        }
 
         public void setIoException(IOException ioException) {
             this.ioException = ioException;

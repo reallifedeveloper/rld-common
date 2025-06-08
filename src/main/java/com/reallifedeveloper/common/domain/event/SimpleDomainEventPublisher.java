@@ -35,12 +35,12 @@ import java.util.List;
  *
  * @author RealLifeDeveloper
  */
-public class SimpleDomainEventPublisher implements DomainEventPublisher {
+public final class SimpleDomainEventPublisher implements DomainEventPublisher {
 
     private List<DomainEventSubscriber<? extends DomainEvent>> subscribers = new ArrayList<>();
 
     /**
-     * Creates a new <code>SimpleDomainEventPublisher</code> with no subscribers registered.
+     * Creates a new {@code SimpleDomainEventPublisher} with no subscribers registered.
      * <p>
      * Use the {@link #subscribe(DomainEventSubscriber)} to add subscribers.
      */
@@ -49,17 +49,17 @@ public class SimpleDomainEventPublisher implements DomainEventPublisher {
     }
 
     /**
-     * Creates a new <code>SimpleDomainEventPublisher</code> with a number of subscribers
+     * Creates a new {@code SimpleDomainEventPublisher} with a number of subscribers
      * registered to be notified when events are published.
      *
      * @param subscribers a list of subscribers to notify when events are published
-     * @throws IllegalArgumentException if <code>subscribers</code> is <code>null</code>
+     * @throws IllegalArgumentException if {@code subscribers} is {@code null}
      */
     public SimpleDomainEventPublisher(List<DomainEventSubscriber<? extends DomainEvent>> subscribers) {
         if (subscribers == null) {
             throw new IllegalArgumentException("subscribers must not be null");
         }
-        this.subscribers = subscribers;
+        this.subscribers = new ArrayList<>(subscribers);
     }
 
     /**
@@ -67,7 +67,7 @@ public class SimpleDomainEventPublisher implements DomainEventPublisher {
      * method for each registered subscriber.
      *
      * @param event the domain event to publish
-     * @throws IllegalArgumentException if <code>event</code> is <code>null</code>
+     * @throws IllegalArgumentException if {@code event} is {@code null}
      */
     @Override
     public void publish(DomainEvent event) {
@@ -87,7 +87,7 @@ public class SimpleDomainEventPublisher implements DomainEventPublisher {
      * Registers an event handler with this publisher.
      *
      * @param subscriber the event handler to register
-     * @throws IllegalArgumentException if <code>subscriber</code> is <code>null</code>
+     * @throws IllegalArgumentException if {@code subscriber} is {@code null}
      */
     @Override
     public void subscribe(DomainEventSubscriber<? extends DomainEvent> subscriber) {

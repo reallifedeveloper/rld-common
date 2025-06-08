@@ -14,8 +14,8 @@ public interface ValueObject<T> extends DomainObject<T> {
      * Checks if this value object has the same value as another.
      *
      * @param otherObject the other value object
-     * @return <code>true</code> if this object has the same value as <code>otherObject</code>,
-     * <code>false</code> otherwise
+     * @return {@code true} if this object has the same value as {@code otherObject},
+     * {@code false} otherwise
      */
     boolean hasSameValueAs(T otherObject);
 

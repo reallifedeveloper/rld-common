@@ -1,83 +1,83 @@
 package com.reallifedeveloper.common.domain;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.Date;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TestTimeServiceTest {
 
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    private static final String DATE_1 = "2015-01-07 13:04:00";
-    private static final String DATE_2 = "2015-01-07 13:11:00";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(TestTimeService.DATE_TIME_FORMAT);
+
+    private static final String DATE_1 = "2015-01-07 13:04:00Z";
+    private static final String DATE_2 = "2015-01-07 13:11:00Z";
 
     private TestTimeService timeService = new TestTimeService();
 
     @Test
-    public void nowDates() throws Exception {
-        Date[] dates = dates(DATE_1, DATE_2);
-        timeService.setDates(dates);
-        Assert.assertEquals("Wrong timestamp: ", dates[0], timeService.now());
-        Assert.assertEquals("Wrong timestamp: ", dates[1], timeService.now());
-        Assert.assertEquals("Wrong timestamp: ", dates[0], timeService.now());
-        Assert.assertEquals("Wrong timestamp: ", dates[1], timeService.now());
-        Assert.assertEquals("Wrong dates: ", Arrays.asList(dates), timeService.dates());
+    public void nowDateTimes() throws Exception {
+        ZonedDateTime[] dateTimes = dateTimes(DATE_1, DATE_2);
+        timeService.setDateTimes(dateTimes);
+        Assertions.assertEquals(dateTimes[0], timeService.now(), "Wrong timestamp: ");
+        Assertions.assertEquals(dateTimes[1], timeService.now(), "Wrong timestamp: ");
+        Assertions.assertEquals(dateTimes[0], timeService.now(), "Wrong timestamp: ");
+        Assertions.assertEquals(dateTimes[1], timeService.now(), "Wrong timestamp: ");
+        Assertions.assertEquals(Arrays.asList(dateTimes), timeService.dateTimes(), "Wrong dates: ");
     }
 
     @Test
-    public void nowDateStrings() throws Exception {
+    public void nowDateTimeStrings() throws Exception {
         String[] dateStrings = { DATE_1, DATE_2 };
-        Date[] dates = dates(dateStrings);
-        timeService.setDates(dateStrings);
-        Assert.assertEquals("Wrong timestamp: ", dates[0], timeService.now());
-        Assert.assertEquals("Wrong timestamp: ", dates[1], timeService.now());
-        Assert.assertEquals("Wrong timestamp: ", dates[0], timeService.now());
-        Assert.assertEquals("Wrong timestamp: ", dates[1], timeService.now());
-        Assert.assertEquals("Wrong dates: ", Arrays.asList(dates), timeService.dates());
+        ZonedDateTime[] dates = dateTimes(dateStrings);
+        timeService.setDateTimes(dateStrings);
+        Assertions.assertEquals(dates[0], timeService.now(), "Wrong timestamp: ");
+        Assertions.assertEquals(dates[1], timeService.now(), "Wrong timestamp: ");
+        Assertions.assertEquals(dates[0], timeService.now(), "Wrong timestamp: ");
+        Assertions.assertEquals(dates[1], timeService.now(), "Wrong timestamp: ");
+        Assertions.assertEquals(Arrays.asList(dates), timeService.dateTimes(), "Wrong dates: ");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void nowBeforeCallingSetDates() {
-        timeService.now();
+        Assertions.assertThrows(IllegalStateException.class, timeService::now);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setNullDates() {
-        timeService.setDates((Date[]) null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> timeService.setDateTimes((ZonedDateTime[]) null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setEmptyDates() {
-        timeService.setDates(new Date[0]);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> timeService.setDateTimes(new ZonedDateTime[0]));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setMalformedDateString() {
         String[] dateStrings = { DATE_1, DATE_2, "foo" };
-        timeService.setDates(dateStrings);
+        Assertions.assertThrows(DateTimeParseException.class, () -> timeService.setDateTimes(dateStrings));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setNullDateStrings() {
-        timeService.setDates((String[]) null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> timeService.setDateTimes((String[]) null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setEmptyDateStrings() {
-        timeService.setDates(new String[0]);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> timeService.setDateTimes(new String[0]));
     }
 
-    private Date[] dates(String... dateStrings) throws ParseException {
-        DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
-        Date[] dates = new Date[dateStrings.length];
-        for (int i = 0; i < dateStrings.length; i++) {
-            String dateString = dateStrings[i];
-            dates[i] = dateFormat.parse(dateString);
+    private ZonedDateTime[] dateTimes(String... dateTimeStrings) throws ParseException {
+        ZonedDateTime[] dateTimes = new ZonedDateTime[dateTimeStrings.length];
+        for (int i = 0; i < dateTimeStrings.length; i++) {
+            String dateString = dateTimeStrings[i];
+            dateTimes[i] = ZonedDateTime.parse(dateString, DATE_TIME_FORMATTER);
         }
-        return dates;
+        return dateTimes;
     }
 }

@@ -1,5 +1,7 @@
 package com.reallifedeveloper.common.application.notification;
 
+import java.util.Optional;
+
 import com.reallifedeveloper.tools.test.database.inmemory.InMemoryJpaRepository;
 import com.reallifedeveloper.tools.test.database.inmemory.LongPrimaryKeyGenerator;
 
@@ -11,7 +13,7 @@ public class InMemoryPublishedMessageTrackerRepository extends InMemoryJpaReposi
     }
 
     @Override
-    public PublishedMessageTracker findByPublicationChannel(String publicationChannel) {
+    public Optional<PublishedMessageTracker> findByPublicationChannel(String publicationChannel) {
         return findByUniqueField("publicationChannel", publicationChannel);
     }
 

@@ -1,47 +1,45 @@
 package com.reallifedeveloper.common.infrastructure.persistence;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.data.jpa.repository.Query;
 
 public class JpaRepositoryTest {
 
-    private JpaTestRepository repository = new JpaTestRepository();
+    private final JpaTestRepository repository = new JpaTestRepository();
 
     @Test
     public void foo() {
-        Assert.assertEquals("Wrong query string: ", "foo", repository.getQueryString("foo"));
+        assertEquals("foo", repository.getQueryString("foo").get(), "Wrong query string");
     }
 
     @Test
     public void bar() {
-        Assert.assertEquals("Wrong query string: ", "bar", repository.getQueryString("bar", int.class));
+        assertEquals("bar", repository.getQueryString("bar", int.class).get(), "Wrong query string");
     }
 
     @Test
     public void baz() {
-        Assert.assertEquals("Wrong query string: ", "baz", repository.getQueryString("baz", String.class, int.class));
+        assertEquals("baz", repository.getQueryString("baz", String.class, int.class).get(), "Wrong query string");
     }
 
     @Test
     public void interfaceMethodWithoutQueryString() {
-        Assert.assertNull("Query string should be null",
-                repository.getQueryString("interfaceMethodWithoutQueryString"));
+        assertFalse(repository.getQueryString("interfaceMethodWithoutQueryString").isPresent(), "Query string should not be present");
     }
 
     @Test
     public void methodWithoutQueryString() {
-        Assert.assertNull("Query string should be null", repository.getQueryString("methodWithoutQueryString"));
+        assertFalse(repository.getQueryString("methodWithoutQueryString").isPresent(), "Query string should not be present");
     }
 
     @Test
     public void unknownMethod() {
-        try {
-            repository.getQueryString("noSuchMethod");
-            Assert.fail("Expected RuntimeException to be thrown");
-        } catch (RuntimeException e) {
-            Assert.assertEquals("Wrong root cause: ", NoSuchMethodException.class, e.getCause().getClass());
-        }
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> repository.getQueryString("noSuchMethod"));
+        assertEquals(NoSuchMethodException.class, thrown.getCause().getClass(), "Wrong root cause");
     }
 
     private interface TestRepository {
@@ -56,7 +54,7 @@ public class JpaRepositoryTest {
         void interfaceMethodWithoutQueryString();
     }
 
-    private static class JpaTestRepository extends AbstractJpaRepository implements TestRepository {
+    private static class JpaTestRepository extends BaseJpaRepository implements TestRepository {
 
         @Override
         @Query("foo")
@@ -72,13 +70,11 @@ public class JpaRepositoryTest {
         public void baz(String s, int i) {
         }
 
-        @Override
-        public void interfaceMethodWithoutQueryString() {
-        }
-
-        @SuppressWarnings("unused")
         public void methodWithoutQueryString() {
         }
 
+        @Override
+        public void interfaceMethodWithoutQueryString() {
+        }
     }
 }

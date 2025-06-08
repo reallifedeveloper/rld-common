@@ -7,18 +7,21 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.Arrays;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import com.reallifedeveloper.common.resource.AbstractResource;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.UriInfo;
+
+import com.reallifedeveloper.common.domain.ErrorHandling;
+import com.reallifedeveloper.common.resource.BaseResource;
 import com.reallifedeveloper.common.resource.ResourceUtil;
 
 /**
@@ -26,7 +29,7 @@ import com.reallifedeveloper.common.resource.ResourceUtil;
  *
  * @author RealLifeDeveloper
  */
-public final class DocumentationResource extends AbstractResource {
+public final class DocumentationResource extends BaseResource {
 
     private static final String CONTENT_TYPE_HTML = MediaType.TEXT_HTML + "; charset=UTF-8";
     private static final String CONTENT_TYPE_BINARY = MediaType.APPLICATION_OCTET_STREAM;
@@ -35,35 +38,31 @@ public final class DocumentationResource extends AbstractResource {
 
     private static final String[] DEFAULT_DOCUMENTS = { "index.md", "readme.md" };
 
-    private String resourceDir;
-    private HtmlProducer htmlProducer;
+    private final String resourceDir;
+    private final HtmlProducer htmlProducer;
 
     @Context
-    private HttpHeaders httpHeaders;
+    private @Nullable HttpHeaders httpHeaders;
 
     @Context
-    private UriInfo uriInfo;
+    private @Nullable UriInfo uriInfo;
 
     /**
-     * Creates a new <code>DocumentationResource</code> that reads documents from the specified resource
-     * directory, converting them to HTML using the given {@link HtmlProducer}.
+     * Creates a new {@code DocumentationResource} that reads documents from the specified resource directory, converting them to HTML using
+     * the given {@link HtmlProducer}.
      *
-     * @param resourceDir the directory from which to read documents
-     * @param htmlProducer the <code>HtmlProducer</code> to use to convert documents to HTML
+     * @param resourceDir  the directory from which to read documents
+     * @param htmlProducer the {@code HtmlProducer} to use to convert documents to HTML
      *
-     * @throws IllegalArgumentException if any argument is <code>null</code>, of if <code>resourceDir</code>
-     * does not exist
+     * @throws IllegalArgumentException if any argument is {@code null}, of if {@code resourceDir} does not exist
      */
     public DocumentationResource(String resourceDir, HtmlProducer htmlProducer) {
-        if (resourceDir == null || htmlProducer == null) {
-            throw new IllegalArgumentException("Arguments must not be null: resourceDir=" + resourceDir
-                    + ", htmlProducer=" + htmlProducer);
-        }
+        ErrorHandling.checkNull("Arguments must not be null: resourceDir=%s, htmlProducer=%s", resourceDir, htmlProducer);
+        this.resourceDir = resourceDir;
+        this.htmlProducer = htmlProducer;
         if (!resourceExists(resourceDir)) {
             throw new IllegalArgumentException("resourceDir does not exist: " + resourceDir);
         }
-        this.resourceDir = resourceDir;
-        this.htmlProducer = htmlProducer;
     }
 
     /**
@@ -74,9 +73,11 @@ public final class DocumentationResource extends AbstractResource {
     @GET
     @Path("/")
     public Response redirect() {
+        if (uriInfo == null) {
+            throw new IllegalStateException("uriInfo field has not been set, it is assumed to be injected by Jakarta");
+        }
         URI uri = uriInfo.getAbsolutePathBuilder().path("/doc/").build();
-        Response response = Response.status(Status.MOVED_PERMANENTLY).location(uri).entity(uri.toString()).build();
-        return response;
+        return Response.status(Status.MOVED_PERMANENTLY).location(uri).entity(uri.toString()).build();
     }
 
     /**
@@ -84,10 +85,11 @@ public final class DocumentationResource extends AbstractResource {
      *
      * @return a response containing the HTML produced
      *
-     * @throws javax.ws.rs.WebApplicationException with status 404 if no default document was found
+     * @throws jakarta.ws.rs.WebApplicationException with status 404 if no default document was found
      */
     @GET
     @Path("/doc")
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     public Response getDocumentation() {
         try {
             return handleResource(getDefaultDocument());
@@ -103,10 +105,11 @@ public final class DocumentationResource extends AbstractResource {
      *
      * @return a response containing the HTML produced
      *
-     * @throws javax.ws.rs.WebApplicationException with status 404 if <code>document</code> was not found
+     * @throws jakarta.ws.rs.WebApplicationException with status 404 if {@code document} was not found
      */
     @GET
     @Path("/doc/{document}")
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     public Response getDocumentation(@PathParam("document") String document) {
         try {
             return handleResource(resourceDir + "/" + document);
@@ -115,13 +118,13 @@ public final class DocumentationResource extends AbstractResource {
         }
     }
 
+    @SuppressWarnings("PMD.UseTryWithResources")
     private Response handleResource(String resourceName) throws IOException {
         Response response;
         if (htmlProducer.canHandle(resourceName)) {
             String html = htmlProducer.produce(resourceName);
-            response =
-                    Response.ok(html).header(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_HTML)
-                            .cacheControl(ResourceUtil.cacheControl(CACHE_1_HOUR)).build();
+            response = Response.ok(html).header(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_HTML)
+                    .cacheControl(ResourceUtil.cacheControl(CACHE_1_HOUR)).build();
         } else {
             InputStream input = getClass().getResourceAsStream(resourceName);
             if (input == null) {
@@ -154,8 +157,7 @@ public final class DocumentationResource extends AbstractResource {
                 return resourceName;
             }
         }
-        throw new FileNotFoundException("Resource not found: " + resourceDir + "/"
-                + Arrays.asList(DEFAULT_DOCUMENTS));
+        throw new FileNotFoundException("Resource not found: " + resourceDir + "/" + Arrays.asList(DEFAULT_DOCUMENTS));
     }
 
     private boolean resourceExists(String resourceName) {

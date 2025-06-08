@@ -1,11 +1,13 @@
 package com.reallifedeveloper.common.infrastructure.jmx;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolConfiguration;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TomcatConnectionPoolConfiguratorTest {
 
@@ -18,7 +20,7 @@ public class TomcatConnectionPoolConfiguratorTest {
 
     private TomcatConnectionPoolConfigurator connectionPoolconfigurator;
 
-    @Before
+    @BeforeEach
     public void init() {
         PoolConfiguration poolConfiguration = new PoolProperties();
         poolConfiguration.setUrl(JDBC_URL);
@@ -35,71 +37,72 @@ public class TomcatConnectionPoolConfiguratorTest {
 
     @Test
     public void getUrl() {
-        Assert.assertEquals("Wrong URL: ", JDBC_URL, connectionPoolconfigurator.getUrl());
+        assertEquals(JDBC_URL, connectionPoolconfigurator.getUrl(), "Wrong URL: ");
     }
 
     @Test
     public void getDriverClassName() {
-        Assert.assertEquals("Wrong driver classname: ", JDBC_DRIVER_CLASSNAME,
-                connectionPoolconfigurator.getDriverClassName());
+        assertEquals(JDBC_DRIVER_CLASSNAME, connectionPoolconfigurator.getDriverClassName(),
+                "Wrong driver classname: ");
     }
 
     @Test
     public void getSize() {
-        Assert.assertEquals("Wrong pool size: ", INITIAL_SIZE, connectionPoolconfigurator.getSize());
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getSize(), "Wrong pool size: ");
     }
 
     @Test
     public void getIdle() {
-        Assert.assertEquals("Wrong number of idle connections: ", INITIAL_SIZE, connectionPoolconfigurator.getIdle());
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getIdle(), "Wrong number of idle connections: ");
     }
 
     @Test
     public void getActive() {
-        Assert.assertEquals("Wrong number of active connections: ", 0, connectionPoolconfigurator.getActive());
+        assertEquals(0, connectionPoolconfigurator.getActive(), "Wrong number of active connections: ");
     }
 
     @Test
     public void getWaitCount() {
-        Assert.assertEquals("Wrong number of waiting threads: ", 0, connectionPoolconfigurator.getWaitCount());
+        assertEquals(0, connectionPoolconfigurator.getWaitCount(), "Wrong number of waiting threads: ");
     }
 
     @Test
     public void checkIdle() {
         connectionPoolconfigurator.checkIdle();
-        Assert.assertEquals("Wrong pool size: ", INITIAL_SIZE, connectionPoolconfigurator.getSize());
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getSize(), "Wrong pool size: ");
     }
 
     @Test
     public void checkAbandoned() {
         connectionPoolconfigurator.checkAbandoned();
-        Assert.assertEquals("Wrong pool size: ", INITIAL_SIZE, connectionPoolconfigurator.getSize());
-        Assert.assertEquals("Wrong number of idle connections: ", INITIAL_SIZE, connectionPoolconfigurator.getIdle());
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getSize(), "Wrong pool size: ");
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getIdle(), "Wrong number of idle connections: ");
     }
 
     @Test
     public void testIdle() {
         connectionPoolconfigurator.testIdle();
-        Assert.assertEquals("Wrong pool size: ", INITIAL_SIZE, connectionPoolconfigurator.getSize());
-        Assert.assertEquals("Wrong number of idle connections: ", INITIAL_SIZE, connectionPoolconfigurator.getIdle());
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getSize(), "Wrong pool size: ");
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getIdle(), "Wrong number of idle connections: ");
     }
 
     @Test
     public void purge() {
         connectionPoolconfigurator.purge();
-        Assert.assertEquals("Wrong pool size: ", 0, connectionPoolconfigurator.getSize());
-        Assert.assertEquals("Wrong number of idle connections: ", 0, connectionPoolconfigurator.getIdle());
+        assertEquals(0, connectionPoolconfigurator.getSize(), "Wrong pool size: ");
+        assertEquals(0, connectionPoolconfigurator.getIdle(), "Wrong number of idle connections: ");
     }
 
     @Test
     public void purgeOnReturn() {
         connectionPoolconfigurator.purgeOnReturn();
-        Assert.assertEquals("Wrong pool size: ", INITIAL_SIZE, connectionPoolconfigurator.getSize());
-        Assert.assertEquals("Wrong number of idle connections: ", INITIAL_SIZE, connectionPoolconfigurator.getIdle());
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getSize(), "Wrong pool size: ");
+        assertEquals(INITIAL_SIZE, connectionPoolconfigurator.getIdle(), "Wrong number of idle connections: ");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullDataSource() {
-        new TomcatConnectionPoolConfigurator(null);
+        assertThrows(IllegalArgumentException.class, () -> new TomcatConnectionPoolConfigurator(null),
+                "Expected constructor to throw IllegalArgumentException for null DataSource");
     }
 }

@@ -1,15 +1,17 @@
 package com.reallifedeveloper.common.resource.notification;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import org.codehaus.jackson.annotate.JsonRawValue;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.reallifedeveloper.common.application.notification.Notification;
+import com.reallifedeveloper.common.domain.ErrorHandling;
 import com.reallifedeveloper.common.domain.ObjectSerializer;
 
 /**
@@ -19,33 +21,30 @@ import com.reallifedeveloper.common.domain.ObjectSerializer;
  */
 @XmlRootElement(name = "Notification")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class NotificationRepresentation {
+public final class NotificationRepresentation {
 
     @XmlElement(name = "eventType")
-    private String eventType;
+    private @Nullable String eventType;
 
     @XmlElement(name = "storedEventId")
     private long storedEventId;
 
     @XmlElement(name = "occurredOn")
-    private Date occurredOn;
+    private @Nullable ZonedDateTime occurredOn;
 
     @XmlElement(name = "event")
     @JsonRawValue
-    private String event;
+    private @Nullable String event;
 
     /**
-     * Creates a new <code>NotificationRepresentation</code> representing the given {@link Notification},
-     * and using the given {@link ObjectSerializer} to serialize the domain event.
+     * Creates a new {@code NotificationRepresentation} representing the given {@link Notification}, and using the given
+     * {@link ObjectSerializer} to serialize the domain event.
      *
-     * @param notification the notification to represent
+     * @param notification     the notification to represent
      * @param objectSerializer the object serializer to use to serialize the domain event
      */
     public NotificationRepresentation(Notification notification, ObjectSerializer<String> objectSerializer) {
-        if (notification == null || objectSerializer == null) {
-            throw new IllegalArgumentException("Arguments must not be null: notification=" + notification
-                    + ", objectSerializer=" + objectSerializer);
-        }
+        ErrorHandling.checkNull("Arguments must not be null: notification=%s, objectSerializer=%s", notification, objectSerializer);
         this.eventType = notification.eventType();
         this.storedEventId = notification.storedEventId();
         this.occurredOn = notification.occurredOn();
@@ -55,7 +54,7 @@ public class NotificationRepresentation {
     /**
      * Required by JAXB.
      */
-    NotificationRepresentation() {
+    /* package-private */ NotificationRepresentation() {
         super();
     }
 
@@ -64,7 +63,7 @@ public class NotificationRepresentation {
      *
      * @return the name of the domain event class
      */
-    public String getEventType() {
+    public @Nullable String getEventType() {
         return eventType;
     }
 
@@ -82,25 +81,20 @@ public class NotificationRepresentation {
      *
      * @return the date and time the domain event occurred
      */
-    public Date getOccurredOn() {
-        if (occurredOn == null) {
-            return null;
-        } else {
-            return new Date(occurredOn.getTime());
-        }
+    public @Nullable ZonedDateTime getOccurredOn() {
+        return occurredOn;
     }
 
     /**
      * Gives the serialized form of the domain event.
      * <p>
-     * Note that this form depends only on which {@link ObjectSerializer} is being used, and not on how
-     * this <code>NotificationRepresentation</code> is serialized. For example, if a JSON object serializer
-     * is used, the event will be serialized as a JSON string, even if the representation is serialized
-     * as XML.
+     * Note that this form depends only on which {@link ObjectSerializer} is being used, and not on how this
+     * {@code NotificationRepresentation} is serialized. For example, if a JSON object serializer is used, the event will be serialized as a
+     * JSON string, even if the representation is serialized as XML.
      *
      * @return the serialized form of the domain event
      */
-    public String getEvent() {
+    public @Nullable String getEvent() {
         return event;
     }
 

@@ -21,11 +21,11 @@ public interface HtmlProducer {
     String produce(String resourceName) throws IOException;
 
     /**
-     * Shows if this <code>HtmlProducer</code> can handle the given resource or not.
+     * Shows if this {@code HtmlProducer} can handle the given resource or not.
      *
      * @param resourceName the name of the resource to check
      *
-     * @return <code>true</code> if the resource can be handled, <code>false</code> otherwise
+     * @return {@code true} if the resource can be handled, {@code false} otherwise
      */
     boolean canHandle(String resourceName);
 }

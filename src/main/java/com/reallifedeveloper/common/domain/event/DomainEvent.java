@@ -1,7 +1,7 @@
 package com.reallifedeveloper.common.domain.event;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import com.reallifedeveloper.common.domain.DomainObject;
 
@@ -17,7 +17,7 @@ public interface DomainEvent extends DomainObject<DomainEvent>, Serializable {
      *
      * @return the time the event occurred
      */
-    Date occurredOn();
+    ZonedDateTime eventOccurredOn();
 
     /**
      * Gives the version of this event. This is useful when deserializing an event.
@@ -27,6 +27,6 @@ public interface DomainEvent extends DomainObject<DomainEvent>, Serializable {
      *
      * @return the version of this event
      */
-    int version();
+    int eventVersion();
 
 }

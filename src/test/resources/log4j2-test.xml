@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration xmlns="https://logging.apache.org/xml/ns"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://logging.apache.org/xml/ns https://logging.apache.org/xml/ns/log4j-config-2.xsd">
+
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.reallifedeveloper" level="TRACE">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+
+        <Logger name="org.springframework" level="WARN">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+
+        <Logger name="org.springframework.orm.jpa" level="INFO">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+
+        <!-- Set to "debug" to display Hibernate SQL statements, equivalent to the deprecated show_sql=true. -->
+        <Logger name="org.hibernate.SQL" level="DEBUG">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+
+        <!-- Set to "trace" to show arguments to SQL queries, among other things. -->
+        <Logger name="org.hibernate.type" level="INFO">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+
+        <Logger name="org.dbunit" level="INFO">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+
+        <Logger name="org.dbunit.dataset" level="INFO">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+    </Loggers>
+</Configuration>

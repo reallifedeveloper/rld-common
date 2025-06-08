@@ -1,18 +1,20 @@
 package com.reallifedeveloper.common.domain.event;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ThreadLocalDomainEventPublisherTest {
 
     private ThreadLocalDomainEventPublisher publisher = new ThreadLocalDomainEventPublisher();
 
-    @Before
+    @BeforeEach
     public void clearSubscribers() {
         publisher.reset();
     }
@@ -21,9 +23,9 @@ public class ThreadLocalDomainEventPublisherTest {
     public void simpleSubscription() {
         TestSubscriber subscriber = new TestSubscriber(BaseDomainEvent.class);
         publisher.subscribe(subscriber);
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber.handledEvents().size());
+        assertEquals(0, subscriber.handledEvents().size(), "No events should have been handled: ");
         publisher.publish(new BaseDomainEvent());
-        Assert.assertEquals("Exactly one event should have been handled: ", 1, subscriber.handledEvents().size());
+        assertEquals(1, subscriber.handledEvents().size(), "Exactly one event should have been handled: ");
     }
 
     @Test
@@ -34,22 +36,22 @@ public class ThreadLocalDomainEventPublisherTest {
         // Subscriber 2 subscribes to only SubDomainEvents
         TestSubscriber subscriber2 = new TestSubscriber(SubDomainEvent.class);
         publisher.subscribe(subscriber2);
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber1.handledEvents().size());
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber2.handledEvents().size());
+        assertEquals(0, subscriber1.handledEvents().size(), "No events should have been handled: ");
+        assertEquals(0, subscriber2.handledEvents().size(), "No events should have been handled: ");
         publisher.publish(new BaseDomainEvent());
         publisher.publish(new SubDomainEvent());
-        Assert.assertEquals("Exactly two events should have been handled: ", 2, subscriber1.handledEvents().size());
-        Assert.assertEquals("Exactly one event should have been handled: ", 1, subscriber2.handledEvents().size());
+        assertEquals(2, subscriber1.handledEvents().size(), "Exactly two events should have been handled: ");
+        assertEquals(1, subscriber2.handledEvents().size(), "Exactly one event should have been handled: ");
     }
 
     @Test
     public void canSubscribeToAllDomainEvents() {
         TestSubscriber subscriber = new TestSubscriber(DomainEvent.class);
         publisher.subscribe(subscriber);
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber.handledEvents().size());
+        assertEquals(0, subscriber.handledEvents().size(), "No events should have been handled: ");
         publisher.publish(new BaseDomainEvent());
         publisher.publish(new SubDomainEvent());
-        Assert.assertEquals("Exactly two events should have been handled: ", 2, subscriber.handledEvents().size());
+        assertEquals(2, subscriber.handledEvents().size(), "Exactly two events should have been handled: ");
     }
 
     @Test
@@ -85,51 +87,51 @@ public class ThreadLocalDomainEventPublisherTest {
         t1.join();
         t2.join();
 
-        Assert.assertEquals("Exactly one event should have been handled: ", 1, subscriber1.handledEvents().size());
-        Assert.assertEquals("Wrong event type: ", BaseDomainEvent.class,
-                subscriber1.handledEvents().get(0).getClass());
+        assertEquals(1, subscriber1.handledEvents().size(), "Exactly one event should have been handled: ");
+        assertEquals(BaseDomainEvent.class, subscriber1.handledEvents().get(0).getClass(),
+                "Wrong event type: ");
 
-        Assert.assertEquals("Exactly one event should have been handled: ", 1, subscriber2.handledEvents().size());
-        Assert.assertEquals("Wrong event type: ", SubDomainEvent.class,
-                subscriber2.handledEvents().get(0).getClass());
+        assertEquals(1, subscriber2.handledEvents().size(), "Exactly one event should have been handled: ");
+        assertEquals(SubDomainEvent.class, subscriber2.handledEvents().get(0).getClass(),
+                "Wrong event type: ");
     }
 
     @Test
     public void reset() {
         TestSubscriber subscriber = new TestSubscriber(BaseDomainEvent.class);
         publisher.subscribe(subscriber);
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber.handledEvents().size());
+        assertEquals(0, subscriber.handledEvents().size(), "No events should have been handled: ");
         publisher.reset();
         publisher.publish(new BaseDomainEvent());
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber.handledEvents().size());
+        assertEquals(0, subscriber.handledEvents().size(), "No events should have been handled: ");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void subscribingSubscriberNotAllowed() {
         SubscribingSubscriber subscriber = new SubscribingSubscriber(publisher);
         publisher.subscribe(subscriber);
-        publisher.publish(new BaseDomainEvent());
+        assertThrows(IllegalStateException.class, () -> publisher.publish(new BaseDomainEvent()));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void publishingSubscriberNotAllowed() {
         PublishingSubscriber subscriber = new PublishingSubscriber(publisher);
         publisher.subscribe(subscriber);
-        publisher.publish(new BaseDomainEvent());
+        assertThrows(IllegalStateException.class, () -> publisher.publish(new BaseDomainEvent()));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void resettingSubscriberNotAllowed() {
         ResettingSubscriber subscriber = new ResettingSubscriber(publisher);
         publisher.subscribe(subscriber);
-        publisher.publish(new BaseDomainEvent());
+        assertThrows(IllegalStateException.class, () -> publisher.publish(new BaseDomainEvent()));
     }
 
     static class BaseDomainEvent extends AbstractDomainEvent {
         private static final long serialVersionUID = 1L;
 
         BaseDomainEvent() {
-            super(new Date());
+            super(ZonedDateTime.now());
         }
     }
 
@@ -138,7 +140,7 @@ public class ThreadLocalDomainEventPublisherTest {
     }
 
     /**
-     * A <code>DomainEventSubscriber</code> that holds a list with the events handled.
+     * A {@code DomainEventSubscriber} that holds a list with the events handled.
      */
     static class TestSubscriber implements DomainEventSubscriber<DomainEvent> {
 
@@ -146,9 +148,9 @@ public class ThreadLocalDomainEventPublisherTest {
         private List<DomainEvent> events = new ArrayList<>();
 
         /**
-         * Creates a new <code>TestSubscriber</code> that listens for the given type of event.
+         * Creates a new {@code TestSubscriber} that listens for the given type of event.
          *
-         * @param eventType the kind of <code>DomainEvent</code> to handle
+         * @param eventType the kind of {@code DomainEvent} to handle
          */
         TestSubscriber(Class<? extends DomainEvent> eventType) {
             this.eventType = eventType;
@@ -171,7 +173,7 @@ public class ThreadLocalDomainEventPublisherTest {
     }
 
     /**
-     * A <code>DomainEventSubscriber</code> that tries to call
+     * A {@code DomainEventSubscriber} that tries to call
      * {@link ThreadLocalDomainEventPublisher#subscribe(DomainEventSubscriber) which is not allowed.
      */
     static class SubscribingSubscriber implements DomainEventSubscriber<DomainEvent> {
@@ -194,7 +196,7 @@ public class ThreadLocalDomainEventPublisherTest {
     }
 
     /**
-     * A <code>DomainEventSubscriber</code> that tries to call
+     * A {@code DomainEventSubscriber} that tries to call
      * {@link ThreadLocalDomainEventPublisher#publish(DomainEvent)} which is not allowed.
      */
     static class PublishingSubscriber implements DomainEventSubscriber<DomainEvent> {
@@ -217,7 +219,7 @@ public class ThreadLocalDomainEventPublisherTest {
     }
 
     /**
-     * A <code>DomainEventSubscriber</code> that tries to call {@link ThreadLocalDomainEventPublisher#reset()}
+     * A {@code DomainEventSubscriber} that tries to call {@link ThreadLocalDomainEventPublisher#reset()}
      * which is not allowed.
      */
     static class ResettingSubscriber implements DomainEventSubscriber<DomainEvent> {

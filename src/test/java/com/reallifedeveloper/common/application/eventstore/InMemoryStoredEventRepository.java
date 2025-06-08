@@ -2,12 +2,13 @@ package com.reallifedeveloper.common.application.eventstore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.reallifedeveloper.tools.test.database.inmemory.InMemoryJpaRepository;
 import com.reallifedeveloper.tools.test.database.inmemory.LongPrimaryKeyGenerator;
 
 public class InMemoryStoredEventRepository extends InMemoryJpaRepository<StoredEvent, Long>
-        implements StoredEventRepository {
+implements StoredEventRepository {
 
     public InMemoryStoredEventRepository() {
         super(new LongPrimaryKeyGenerator());
@@ -36,14 +37,9 @@ public class InMemoryStoredEventRepository extends InMemoryJpaRepository<StoredE
     }
 
     @Override
-    public StoredEvent findById(Long id) {
-        return findOne(id);
-    }
-
-    @Override
-    public Long lastStoredEventId() {
+    public Optional<Long> lastStoredEventId() {
         if (count() == 0) {
-            return null;
+            return Optional.empty();
         }
         Long lastStoredEventId = -1L;
         for (StoredEvent event : findAll()) {
@@ -51,7 +47,7 @@ public class InMemoryStoredEventRepository extends InMemoryJpaRepository<StoredE
                 lastStoredEventId = event.id();
             }
         }
-        return lastStoredEventId;
+        return Optional.of(lastStoredEventId);
     }
 
 }

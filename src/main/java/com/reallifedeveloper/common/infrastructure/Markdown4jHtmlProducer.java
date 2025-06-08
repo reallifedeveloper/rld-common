@@ -21,13 +21,13 @@ public final class Markdown4jHtmlProducer implements HtmlProducer {
 
     private static final Logger LOG = LoggerFactory.getLogger(Markdown4jHtmlProducer.class);
 
-    private Markdown4jProcessor markdownProcessor = new Markdown4jProcessor();
+    private final Markdown4jProcessor markdownProcessor = new Markdown4jProcessor();
 
     @Override
     public String produce(String resourceName) throws IOException {
         LOG.trace("produce: resourceName={}", resourceName);
         if (resourceName == null) {
-            throw new IllegalArgumentException("resourceName should not be null");
+            throw new IllegalArgumentException("resourceName must not be null");
         }
         try (InputStream in = getClass().getResourceAsStream(resourceName)) {
             if (in == null) {

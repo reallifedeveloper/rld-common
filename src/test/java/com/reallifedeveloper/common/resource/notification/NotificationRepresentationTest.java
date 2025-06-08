@@ -1,9 +1,12 @@
 package com.reallifedeveloper.common.resource.notification;
 
-import java.util.Date;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Assert;
-import org.junit.Test;
+import java.time.ZonedDateTime;
+
+import org.junit.jupiter.api.Test;
 
 import com.reallifedeveloper.common.application.notification.Notification;
 import com.reallifedeveloper.common.domain.ObjectSerializer;
@@ -13,76 +16,73 @@ import com.reallifedeveloper.common.infrastructure.GsonObjectSerializer;
 
 public class NotificationRepresentationTest {
 
-    private ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
+    private final ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
 
     @Test
     public void constructor() {
         TestEvent event = new TestEvent(1, "foo");
         long storedEventId = 42;
-        Notification notification = new Notification(event, storedEventId);
+        Notification notification = Notification.create(event, storedEventId);
         NotificationRepresentation representation = new NotificationRepresentation(notification, objectSerializer);
-        Assert.assertEquals("Wrong event type: ", TestEvent.class.getName(), representation.getEventType());
-        Assert.assertEquals("Wrong stored event ID: ", storedEventId, representation.getStoredEventId());
-        Assert.assertEquals("Wrong timestamp: ", event.occurredOn(), representation.getOccurredOn());
-        Assert.assertEquals("Wrong event: ", objectSerializer.serialize(event), representation.getEvent());
+
+        assertEquals(TestEvent.class.getName(), representation.getEventType(), "Wrong event type:");
+        assertEquals(storedEventId, representation.getStoredEventId(), "Wrong stored event ID:");
+        assertEquals(event.eventOccurredOn(), representation.getOccurredOn(), "Wrong timestamp:");
+        assertEquals(objectSerializer.serialize(event), representation.getEvent(), "Wrong event:");
     }
 
     @Test
     public void constructorEventWithNullOccurredOn() {
         NullableTestEvent event = new NullableTestEvent(null, 1);
-        Notification notification = new Notification(event, 42L);
+        Notification notification = Notification.create(event, 42L);
         NotificationRepresentation representation = new NotificationRepresentation(notification, objectSerializer);
-        Assert.assertNull("occurredOn should be null", representation.getOccurredOn());
+
+        assertNull(representation.getOccurredOn(), "occurredOn should be null");
     }
 
     @Test
-    public void defensiveCopyOfOccurredOnInConstructor() {
-        Date occurredOn = new Date();
-        long occurredOnMillis = occurredOn.getTime();
-        NullableTestEvent event = new NullableTestEvent(occurredOn, 1);
-        Notification notification = new Notification(event, 42L);
-        NotificationRepresentation representation = new NotificationRepresentation(notification, objectSerializer);
-        occurredOn.setTime(0);
-        Assert.assertEquals("Wrong occuredOn timestamp: ", occurredOnMillis, representation.getOccurredOn().getTime());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void constructorNullNotification() {
-        new NotificationRepresentation(null, objectSerializer);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> new NotificationRepresentation(null, objectSerializer));
+        assertEquals("Arguments must not be null: notification=null, objectSerializer=" + objectSerializer,
+                exception.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorNullSerializer() {
         TestEvent event = new TestEvent(1, "foo");
         long storedEventId = 42;
-        Notification notification = new Notification(event, storedEventId);
-        new NotificationRepresentation(notification, null);
+        Notification notification = Notification.create(event, storedEventId);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> new NotificationRepresentation(notification, null));
+        assertEquals("Arguments must not be null: notification=" + notification + ", objectSerializer=null",
+                exception.getMessage());
     }
 
-
     /**
-     * An implementation of {@link DomainEvent} that allows <code>null</code> for the <code>occurredOn</code>
+     * An implementation of {@link DomainEvent} that allows {@code null} for the {@code occurredOn}
      * timestamp.
      */
     private static class NullableTestEvent implements DomainEvent {
 
         private static final long serialVersionUID = 1L;
 
-        private Date occurredOn;
-        private int version;
+        private final ZonedDateTime occurredOn;
+        private final int version;
 
-        NullableTestEvent(Date occurredOn, int version) {
+        NullableTestEvent(ZonedDateTime occurredOn, int version) {
             this.occurredOn = occurredOn;
             this.version = version;
         }
 
         @Override
-        public Date occurredOn() {
+        public ZonedDateTime eventOccurredOn() {
             return occurredOn;
         }
 
         @Override
-        public int version() {
+        public int eventVersion() {
             return version;
         }
 

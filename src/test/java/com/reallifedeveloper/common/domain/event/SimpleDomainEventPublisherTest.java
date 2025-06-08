@@ -1,17 +1,19 @@
 package com.reallifedeveloper.common.domain.event;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SimpleDomainEventPublisherTest {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createPublisherWithNullSubscribers() {
-        new SimpleDomainEventPublisher(null);
+        assertThrows(IllegalArgumentException.class, () -> new SimpleDomainEventPublisher(null));
     }
 
     @Test
@@ -28,9 +30,9 @@ public class SimpleDomainEventPublisherTest {
         List<DomainEventSubscriber<? extends DomainEvent>> subscribers = new ArrayList<>();
         subscribers.add(subscriber);
         SimpleDomainEventPublisher publisher = new SimpleDomainEventPublisher(subscribers);
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber.handledEvents().size());
+        assertEquals(0, subscriber.handledEvents().size(), "No events should have been handled: ");
         publisher.publish(new BaseDomainEvent());
-        Assert.assertEquals("Exactly one event should have been handled: ", 1, subscriber.handledEvents().size());
+        assertEquals(1, subscriber.handledEvents().size(), "Exactly one event should have been handled: ");
     }
 
     @Test
@@ -41,12 +43,12 @@ public class SimpleDomainEventPublisherTest {
         subscribers.add(subscriber1);
         subscribers.add(subscriber2);
         SimpleDomainEventPublisher publisher = new SimpleDomainEventPublisher(subscribers);
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber1.handledEvents().size());
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber2.handledEvents().size());
+        assertEquals(0, subscriber1.handledEvents().size(), "No events should have been handled: ");
+        assertEquals(0, subscriber2.handledEvents().size(), "No events should have been handled: ");
         publisher.publish(new BaseDomainEvent());
         publisher.publish(new SubDomainEvent());
-        Assert.assertEquals("Exactly two events should have been handled: ", 2, subscriber1.handledEvents().size());
-        Assert.assertEquals("Exactly one event should have been handled: ", 1, subscriber2.handledEvents().size());
+        assertEquals(2, subscriber1.handledEvents().size(), "Exactly two events should have been handled: ");
+        assertEquals(1, subscriber2.handledEvents().size(), "Exactly one event should have been handled: ");
     }
 
     @Test
@@ -54,27 +56,28 @@ public class SimpleDomainEventPublisherTest {
         SimpleDomainEventPublisher publisher = new SimpleDomainEventPublisher();
         BaseDomainEventSubscriber subscriber = new BaseDomainEventSubscriber();
         publisher.subscribe(subscriber);
-        Assert.assertEquals("No events should have been handled: ", 0, subscriber.handledEvents().size());
+        assertEquals(0, subscriber.handledEvents().size(), "No events should have been handled: ");
         publisher.publish(new BaseDomainEvent());
-        Assert.assertEquals("Exactly one event should have been handled: ", 1, subscriber.handledEvents().size());
+        assertEquals(1, subscriber.handledEvents().size(), "Exactly one event should have been handled: ");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void publishNullEvent() {
         SimpleDomainEventPublisher publisher = new SimpleDomainEventPublisher();
-        publisher.publish(null);
+        assertThrows(IllegalArgumentException.class, () -> publisher.publish(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void subscribeNullSubscriber() {
         SimpleDomainEventPublisher publisher = new SimpleDomainEventPublisher();
-        publisher.subscribe(null);
+        assertThrows(IllegalArgumentException.class, () -> publisher.subscribe(null));
     }
 
     static class BaseDomainEvent extends AbstractDomainEvent {
         private static final long serialVersionUID = 1L;
+
         BaseDomainEvent() {
-            super(new Date());
+            super(ZonedDateTime.now());
         }
     }
 
@@ -83,8 +86,7 @@ public class SimpleDomainEventPublisherTest {
     }
 
     /**
-     * A <code>DomainEventSubscriber</code> that listens for any <code>BaseDomainEvent</code>
-     * and holds a list with the events handled.
+     * A {@code DomainEventSubscriber} that listens for any {@code BaseDomainEvent} and holds a list with the events handled.
      */
     static class BaseDomainEventSubscriber implements DomainEventSubscriber<BaseDomainEvent> {
 
@@ -106,8 +108,7 @@ public class SimpleDomainEventPublisherTest {
     }
 
     /**
-     * A <code>DomainEventSubscriber</code> that listens for <code>SubDomainEvent</code>
-     * and holds a list with the events handled.
+     * A {@code DomainEventSubscriber} that listens for {@code SubDomainEvent} and holds a list with the events handled.
      */
     static class SubDomainEventSubscriber implements DomainEventSubscriber<SubDomainEvent> {
 

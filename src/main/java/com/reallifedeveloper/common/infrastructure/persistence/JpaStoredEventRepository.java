@@ -1,6 +1,7 @@
 package com.reallifedeveloper.common.infrastructure.persistence;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,5 +28,5 @@ public interface JpaStoredEventRepository extends StoredEventRepository, JpaRepo
 
     @Override
     @Query("select max(se.id) from StoredEvent se")
-    Long lastStoredEventId();
+    Optional<Long> lastStoredEventId();
 }

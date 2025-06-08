@@ -1,5 +1,8 @@
 package com.reallifedeveloper.common.infrastructure.messaging;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
@@ -8,10 +11,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
@@ -36,34 +38,31 @@ import com.reallifedeveloper.tools.test.TestUtil;
 public class RabbitMQNotificationPublisherIT {
 
     private static final String EXCHANGE_NAME = "reallifedeveloper.common.test";
-    private static final Logger LOG = Logger.getLogger(RabbitMQNotificationPublisherIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RabbitMQNotificationPublisherIT.class);
 
-    private InMemoryStoredEventRepository storedEventRepository = new InMemoryStoredEventRepository();
-    private ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
-    private EventStore eventStore = new EventStore(objectSerializer, storedEventRepository);
-    private NotificationFactory notificationFactory = NotificationFactory.instance(eventStore);
+    private final InMemoryStoredEventRepository storedEventRepository = new InMemoryStoredEventRepository();
+    private final ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
+    private final EventStore eventStore = new EventStore(objectSerializer, storedEventRepository);
+    private final NotificationFactory notificationFactory = NotificationFactory.instance(eventStore);
 
     @Test
-    @Ignore("Activate this test if you have RabbitMQ running on your machine")
     public void singleNotificationSingleListener() throws Exception {
         QueueListener listener = new QueueListener("listener1");
         listener.start();
         List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
-        RabbitMQNotificationPublisher publisher =
-                new RabbitMQNotificationPublisher("localhost", 5672, "guest", "guest", objectSerializer);
+        RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhost", 5672, "guest", "guest", objectSerializer);
         publisher.publish(notifications, EXCHANGE_NAME);
         sleep();
-        Assert.assertEquals("Wrong number of received messages: ", 1, listener.messages().size());
+        assertEquals(1, listener.messages().size(), "Wrong number of received messages");
         for (String message : listener.messages()) {
             NotificationReader reader = new GsonNotificationReader(message);
-            Assert.assertEquals("Wrong notification event type: ", TestEvent.class.getName(), reader.eventType());
-            Assert.assertEquals("Wrong notification event id: ", 42, reader.eventIntValue("id").intValue());
-            Assert.assertEquals("Wrong notification event name: ", "foo", reader.eventStringValue("name"));
+            assertEquals(TestEvent.class.getName(), reader.eventType(), "Wrong notification event type");
+            assertEquals(42, reader.eventIntValue("id").orElseThrow(), "Wrong notification event id");
+            assertEquals("foo", reader.eventStringValue("name").orElseThrow(), "Wrong notification event name");
         }
     }
 
     @Test
-    @Ignore("Activate this test if you have RabbitMQ running on your machine")
     public void multipleNotificationsMultipleListeners() throws Exception {
         QueueListener listener1 = new QueueListener("listener1");
         listener1.start();
@@ -72,34 +71,39 @@ public class RabbitMQNotificationPublisherIT {
         RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhost", objectSerializer);
         publisher.publish(notifications, EXCHANGE_NAME);
         sleep();
-        Assert.assertEquals("Wrong number of received messages for listener 1: ", 1, listener1.messages().size());
+        assertEquals(1, listener1.messages().size(), "Wrong number of received messages for listener 1");
 
         QueueListener listener2 = new QueueListener("listener2");
         listener2.start();
 
         eventStore.add(new TestEvent(4711, "bar"));
         List<StoredEvent> storedEvents = eventStore.allEventsSince(1);
-        Assert.assertEquals("Wrong number of stored events: ", 1, storedEvents.size());
+        assertEquals(1, storedEvents.size(), "Wrong number of stored events");
         notifications = notificationFactory.fromStoredEvents(storedEvents);
         publisher.publish(notifications, EXCHANGE_NAME);
         sleep();
-        Assert.assertEquals("Wrong number of received messages for listener 1: ", 2, listener1.messages().size());
-        Assert.assertEquals("Wrong number of received messages for listener 2: ", 1, listener2.messages().size());
+        assertEquals(2, listener1.messages().size(), "Wrong number of received messages for listener 1");
+        assertEquals(1, listener2.messages().size(), "Wrong number of received messages for listener 2");
     }
 
-    @Test(expected = UnknownHostException.class)
-    public void constructorSingleArgumentWrongHost() throws Exception {
-        RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhostX");
-        List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
-        publisher.publish(notifications, EXCHANGE_NAME);
+    @Test
+    public void constructorSingleArgumentWrongHost() {
+        assertThrows(UnknownHostException.class, () -> {
+            RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhostX", 5672, "guest", "guest",
+                    objectSerializer);
+            List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
+            publisher.publish(notifications, EXCHANGE_NAME);
+        });
     }
 
-    @Test(expected = ConnectException.class)
-    public void constructorHostPortWrongPort() throws Exception {
-        RabbitMQNotificationPublisher publisher =
-                new RabbitMQNotificationPublisher("localhost", TestUtil.findFreePort());
-        List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
-        publisher.publish(notifications, EXCHANGE_NAME);
+    @Test
+    public void constructorHostPortWrongPort() {
+        assertThrows(ConnectException.class, () -> {
+            RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhost", TestUtil.findFreePort(), "guest",
+                    "guest", objectSerializer);
+            List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
+            publisher.publish(notifications, EXCHANGE_NAME);
+        });
     }
 
     private void sleep() {
@@ -115,14 +119,14 @@ public class RabbitMQNotificationPublisherIT {
             eventStore.add(event);
         }
         List<StoredEvent> storedEvents = eventStore.allEventsSince(0);
-        Assert.assertEquals("Wrong number of stored events: ", events.length, storedEvents.size());
+        assertEquals(events.length, storedEvents.size(), "Wrong number of stored events");
         return notificationFactory.fromStoredEvents(storedEvents);
     }
 
     private static class QueueListener extends Thread {
 
-        private DefaultConsumer consumer;
-        private List<String> messages = new ArrayList<>();
+        private final DefaultConsumer consumer;
+        private final List<String> messages = new ArrayList<>();
 
         QueueListener(String name) throws IOException, TimeoutException {
             ConnectionFactory factory = new ConnectionFactory();
@@ -134,10 +138,10 @@ public class RabbitMQNotificationPublisherIT {
             channel.queueBind(queueName, EXCHANGE_NAME, "");
             consumer = new DefaultConsumer(channel) {
                 @Override
-                public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
-                        byte[] body) throws IOException {
+                public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
+                        throws IOException {
                     String message = new String(body, "UTF-8");
-                    LOG.debug(name + ": Message received: + " + message);
+                    LOG.debug(name + ": Message received: " + message);
                     messages.add(message);
                 }
             };
