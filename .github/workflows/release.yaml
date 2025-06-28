@@ -3,7 +3,7 @@ name: CD
 on:
   workflow_run:
     workflows:
-      - install
+      - CI
     types:
       - completed
     branches:
@@ -21,6 +21,8 @@ jobs:
           distribution: 'temurin'
       - name: Create release branch, update version and create tag
         run: |
+          git config user.email "rld@reallifedeveloper.com"
+          git config user.name "RealLifeDeveloper"
           mvn versions:set -DremoveSnapshot -DgenerateBackupPoms=false
           RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           git checkout -b release/$RELEASE_VERSION
