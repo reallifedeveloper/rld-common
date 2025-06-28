@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import com.reallifedeveloper.common.infrastructure.GsonNotificationReader;
 import com.reallifedeveloper.common.infrastructure.GsonObjectSerializer;
 import com.reallifedeveloper.tools.test.TestUtil;
 
+@Disabled("Since this requires RabbitMQ to be instaled on localhost, with the guest user and virtual host '/'")
 public class RabbitMQNotificationPublisherIT {
 
     private static final String EXCHANGE_NAME = "reallifedeveloper.common.test";
