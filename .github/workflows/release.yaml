@@ -12,27 +12,4 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Create release branch, update version and create tag
-        run: |
-          git config user.email "rld@reallifedeveloper.com"
-          git config user.name "RealLifeDeveloper"
-          mvn versions:set -DremoveSnapshot -DgenerateBackupPoms=false
-          RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          git checkout -b release/$RELEASE_VERSION
-          git commit -a -m "New release candidate $RELEASE_VERSION"
-          git push -u origin release/$RELEASE_VERSION
-          git tag v$RELEASE_VERSION
-          git push origin v$RELEASE_VERSION
-          git checkout master
-          mvn versions:set -DnextSnapshot -DgenerateBackupPoms=false
-          git add pom.xml
-          git commit -m "Bumped POM to next snapshot version"
-          git push
+    uses: reallifedeveloper/github-workflows/.github/workflows/release.yaml@main
