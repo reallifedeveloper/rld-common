@@ -8,6 +8,7 @@ on:
       - completed
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   release:
@@ -19,7 +20,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: foo
+      - name: Create release branch, update version and create tag
         run: |
           mvn versions:set -DremoveSnapshot -DgenerateBackupPoms=false
           RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
