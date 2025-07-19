@@ -1,5 +1,7 @@
 package com.reallifedeveloper.common.resource;
 
+import static com.reallifedeveloper.common.domain.LogUtil.removeCRLF;
+
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -82,13 +84,13 @@ public class BaseResource {
         ErrorHandling.checkNull("Arguments must not be null: methodName=%s, originalException=%s", methodName, originalException);
         WebApplicationException webApplicationException;
         if (originalException instanceof IllegalArgumentException) {
-            logger().debug("{}: {}", methodName, originalException);
+            logger().debug("{}: {}", removeCRLF(methodName), removeCRLF(originalException));
             webApplicationException = ResourceUtil.badRequest(originalException.getMessage());
         } else if (originalException instanceof FileNotFoundException) {
-            logger().debug("{}: {}", methodName, originalException);
+            logger().debug("{}: {}", removeCRLF(methodName), removeCRLF(originalException));
             webApplicationException = ResourceUtil.notFound(originalException.getMessage());
         } else {
-            logger().error(methodName, originalException);
+            logger().error(removeCRLF(methodName), removeCRLF(originalException));
             webApplicationException = ResourceUtil.serverError(originalException.toString());
         }
         return webApplicationException;

@@ -1,92 +1,74 @@
 package com.reallifedeveloper.common.infrastructure.messaging;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Collections;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import org.easymock.EasyMock;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.rabbitmq.client.AMQP.BasicProperties;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+
+import com.reallifedeveloper.common.application.notification.Notification;
 import com.reallifedeveloper.common.domain.ObjectSerializer;
+import com.reallifedeveloper.common.domain.event.TestEvent;
 import com.reallifedeveloper.common.infrastructure.GsonObjectSerializer;
 
 public class RabbitMQNotificationPublisherTest {
 
-    private final ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
+    private ConnectionFactory connectionFactory;
+    private Channel channel;
+    private ObjectSerializer<String> objectSerializer = new GsonObjectSerializer();
 
-    @Test
-    public void publishEmptyListDoesNothing() throws Exception {
-        RabbitMQNotificationPublisher publisher =
-                new RabbitMQNotificationPublisher("localhost", 4711, "username", "password", objectSerializer);
-        publisher.publish(Collections.emptyList(), "foo");
+    @BeforeEach
+    public void init() throws Exception {
+        this.connectionFactory = EasyMock.mock(ConnectionFactory.class);
+        Connection connection = EasyMock.mock(Connection.class);
+        this.channel = EasyMock.mock(Channel.class);
+        EasyMock.expect(connectionFactory.newConnection()).andReturn(connection);
+        EasyMock.expect(connection.createChannel()).andReturn(channel);
+        connection.close();
+        EasyMock.replay(connectionFactory, connection);
     }
 
     @Test
-    public void publishNullNotifications() {
-        RabbitMQNotificationPublisher publisher =
-                new RabbitMQNotificationPublisher("localhost", 4711, "username", "password", objectSerializer);
-        assertThrows(IllegalArgumentException.class, () ->
-                publisher.publish(null, "foo"), "Expected IllegalArgumentException for null notifications");
+    public void publishNotificationShouldCallChannelBasicPublish() throws Exception {
+        // Given
+        RabbitMQNotificationPublisher notificationPublisher = new RabbitMQNotificationPublisher(connectionFactory, objectSerializer);
+        TestEvent event1 = new TestEvent(42, "foo");
+        TestEvent event2 = new TestEvent(4711, "bar");
+        List<Notification> notifications = KafkaNotificationPublisherTest.toNotifications(event1, event2);
+
+        channel.basicPublish("channel", "", new BasicProperties(),
+                objectSerializer.serialize(notifications.get(0)).getBytes(StandardCharsets.UTF_8));
+        channel.basicPublish("channel", "", new BasicProperties(),
+                objectSerializer.serialize(notifications.get(1)).getBytes(StandardCharsets.UTF_8));
+        channel.close();
+
+        EasyMock.replay(channel);
+
+        // When
+        notificationPublisher.publish(notifications, "channel");
+
+        // Then
+        EasyMock.verify(channel);
     }
 
     @Test
-    public void publishNullPublicationChannel() {
-        RabbitMQNotificationPublisher publisher =
-                new RabbitMQNotificationPublisher("localhost", 4711, "username", "password", objectSerializer);
-        assertThrows(IllegalArgumentException.class, () ->
-                publisher.publish(Collections.emptyList(), null), "Expected IllegalArgumentException for null publication channel");
+    public void creatingPublisherWithNullConnectionFactoryShouldFail() {
+        Exception e = assertThrows(IllegalArgumentException.class, () -> new RabbitMQNotificationPublisher(null, objectSerializer));
+        assertEquals("Arguments must not be null: connectionFactory=null, objectSerializer=" + objectSerializer, e.getMessage());
     }
 
     @Test
-    public void constructorTwoArgumentsWithObjectSerializerNullHost() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new RabbitMQNotificationPublisher(null, objectSerializer), "Expected IllegalArgumentException for null host");
-    }
-
-    @Test
-    public void constructorTwoArgumentsWithNullObjectSerializer() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new RabbitMQNotificationPublisher("localhost", null), "Expected IllegalArgumentException for null object serializer");
-    }
-
-    @Test
-    public void constructorThreeArgumentsHostNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new RabbitMQNotificationPublisher(null, 4711, objectSerializer),
-                 "Expected IllegalArgumentException for null host in three arguments");
-    }
-
-    @Test
-    public void constructorThreeArgumentsObjectSerializerNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new RabbitMQNotificationPublisher("localhost", 4711, null),
-                 "Expected IllegalArgumentException for null object serializer in three arguments");
-    }
-
-    @Test
-    public void constructorFiveArgumentsHostNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new RabbitMQNotificationPublisher(null, 4711, "username", "password", objectSerializer),
-                 "Expected IllegalArgumentException for null host in five arguments");
-    }
-
-    @Test
-    public void constructorFiveArgumentsUsernameNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new RabbitMQNotificationPublisher("localhost", 4711, null, "password", objectSerializer),
-                 "Expected IllegalArgumentException for null username in five arguments");
-    }
-
-    @Test
-    public void constructorFiveArgumentsPasswordNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new RabbitMQNotificationPublisher("localhost", 4711, "username", null, objectSerializer),
-                 "Expected IllegalArgumentException for null password in five arguments");
-    }
-
-    @Test
-    public void constructorFiveArgumentsObjectSerializerNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new RabbitMQNotificationPublisher("localhost", 4711, "username", "password", null),
-                 "Expected IllegalArgumentException for null object serializer in five arguments");
+    public void creatingPublisherWithNullObjectSerializerShouldFail() {
+        Exception e = assertThrows(IllegalArgumentException.class, () -> new RabbitMQNotificationPublisher(connectionFactory, null));
+        assertEquals("Arguments must not be null: connectionFactory=" + connectionFactory + ", objectSerializer=null", e.getMessage());
     }
 }

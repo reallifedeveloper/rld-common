@@ -52,7 +52,7 @@ public class RabbitMQNotificationPublisherIT {
         QueueListener listener = new QueueListener("listener1");
         listener.start();
         List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
-        RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhost", 5672, "guest", "guest", objectSerializer);
+        RabbitMQNotificationPublisher publisher = createPublisher("localhost", 5672, "guest", "guest");
         publisher.publish(notifications, EXCHANGE_NAME);
         sleep();
         assertEquals(1, listener.messages().size(), "Wrong number of received messages");
@@ -70,7 +70,7 @@ public class RabbitMQNotificationPublisherIT {
         listener1.start();
 
         List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
-        RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhost", objectSerializer);
+        RabbitMQNotificationPublisher publisher = createPublisher("localhost", 5672, "guest", "guest");
         publisher.publish(notifications, EXCHANGE_NAME);
         sleep();
         assertEquals(1, listener1.messages().size(), "Wrong number of received messages for listener 1");
@@ -91,8 +91,7 @@ public class RabbitMQNotificationPublisherIT {
     @Test
     public void constructorSingleArgumentWrongHost() {
         assertThrows(UnknownHostException.class, () -> {
-            RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhostX", 5672, "guest", "guest",
-                    objectSerializer);
+            RabbitMQNotificationPublisher publisher = createPublisher("localhostX", 5672, "guest", "guest");
             List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
             publisher.publish(notifications, EXCHANGE_NAME);
         });
@@ -101,14 +100,26 @@ public class RabbitMQNotificationPublisherIT {
     @Test
     public void constructorHostPortWrongPort() {
         assertThrows(ConnectException.class, () -> {
-            RabbitMQNotificationPublisher publisher = new RabbitMQNotificationPublisher("localhost", TestUtil.findFreePort(), "guest",
-                    "guest", objectSerializer);
+            RabbitMQNotificationPublisher publisher = createPublisher("localhost", TestUtil.findFreePort(), "guest", "guest");
             List<Notification> notifications = createNotifications(new TestEvent(42, "foo"));
             publisher.publish(notifications, EXCHANGE_NAME);
         });
     }
 
-    private void sleep() {
+    private RabbitMQNotificationPublisher createPublisher(String host, int port, String username, String password) {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(host);
+        factory.setPort(port);
+        if (username != null) {
+            factory.setUsername(username);
+        }
+        if (password != null) {
+            factory.setPassword(password);
+        }
+        return new RabbitMQNotificationPublisher(factory, objectSerializer);
+    }
+
+    private static void sleep() {
         try {
             Thread.sleep(50);
         } catch (InterruptedException e) {

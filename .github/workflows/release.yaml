@@ -7,9 +7,16 @@ on:
     types:
       - completed
     branches:
-      - master
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   release:
-    uses: reallifedeveloper/github-workflows/.github/workflows/release.yaml@main
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    uses: reallifedeveloper/github-workflows/.github/workflows/maven-release.yaml@main
+    secrets: inherit
+    permissions:
+      contents: write

@@ -14,7 +14,7 @@ import lombok.experimental.UtilityClass;
  * @author RealLifeDeveloper
  */
 @UtilityClass
-@SuppressWarnings({ "PMD.AvoidDuplicateLiterals", "PMD.NullAssignment", "doclint:missing" })
+@SuppressWarnings({ "PMD.AvoidDuplicateLiterals" })
 public class ErrorHandling {
 
     /**
@@ -180,6 +180,7 @@ public class ErrorHandling {
         checkNullInternal(messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
 
+    @SuppressFBWarnings(value = "FORMAT_STRING_MANIPULATION", justification = "The format string is provided by the programmer, not user")
     private static void checkNullInternal(String messageTemplate, @Nullable Object... arguments) {
         // We know that arguments will never be null, it will always be an array, since
         // this method is only called using varargs
@@ -206,11 +207,10 @@ public class ErrorHandling {
      * @throws IllegalStateException    if {@code messageTemplate} is {@code null}
      */
     @EnsuresNonNull({ "#2" })
-    @SuppressFBWarnings(value = "NP_LOAD_OF_KNOWN_NULL_VALUE", justification = "We want to throw an exception that shows that s is null")
+    @SuppressFBWarnings(value = "FORMAT_STRING_MANIPULATION", justification = "The format string is provided by the programmer, not user")
     public static void checkNullOrBlank(String messageTemplate, @Nullable String s) {
         if (messageTemplate == null) {
-            throw new IllegalStateException(
-                    String.format("checkNullOrBlank called incorrectly: messageTemplate=%s, s='%s'", messageTemplate, s));
+            throw new IllegalStateException(String.format("checkNullOrBlank called incorrectly: messageTemplate=null, s='%s'", s));
         }
         if (s == null || s.isBlank()) {
             throw new IllegalArgumentException(String.format(messageTemplate, s));

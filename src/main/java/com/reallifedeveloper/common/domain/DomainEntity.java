@@ -11,6 +11,7 @@ import java.io.Serializable;
  * @param <T> the type of entity
  * @param <ID> the type of object used to identify the entity
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface DomainEntity<T, ID extends Serializable> extends DomainObject<T> {
 
     /**

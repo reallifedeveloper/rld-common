@@ -1,5 +1,7 @@
 package com.reallifedeveloper.common.infrastructure.jmx;
 
+import static com.reallifedeveloper.common.domain.LogUtil.removeCRLF;
+
 import java.io.InputStream;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -61,13 +63,13 @@ public class ServletContextSystemInfo implements SystemInfoMXBean, ServletContex
             Manifest manifest = new Manifest(in);
             Attributes attributes = manifest.getMainAttributes();
             version = attributes.getValue(VERSION_MANIFEST_ENTRY);
-            LOG.info("version=" + version);
+            LOG.info("version={}", removeCRLF(version));
             buildTime = attributes.getValue(BUILD_TIME_MANIFEST_ENTRY);
-            LOG.info("buildTime=" + buildTime);
+            LOG.info("buildTime={}", removeCRLF(buildTime));
             scmRevision = attributes.getValue(SCM_REVISION_MANIFEST_ENTRY);
-            LOG.info("scmRevision=" + scmRevision);
+            LOG.info("scmRevision={}", removeCRLF(scmRevision));
         } catch (Exception e) {
-            LOG.error("Failed to read META-INF/MANIFEST.MF: " + e);
+            LOG.error("Failed to read META-INF/MANIFEST.MF: ", e);
         }
     }
 

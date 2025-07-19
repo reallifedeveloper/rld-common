@@ -12,6 +12,7 @@ import java.util.List;
  *
  * @author RealLifeDeveloper
  */
+@FunctionalInterface
 public interface NotificationPublisher {
 
     /**

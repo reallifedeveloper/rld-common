@@ -1,12 +1,16 @@
 name: Publish package to the Maven Central Repository
+
 on:
   release:
     types: [created]
+
+permissions:
+  contents: read
+
 jobs:
   publish:
     uses: reallifedeveloper/github-workflows/.github/workflows/maven-deploy.yaml@main
-    secrets:
-      GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
-      GPG_SECRET_KEY_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
-      SONATYPE_CENTRAL_USERNAME: ${{ secrets.SONATYPE_CENTRAL_USERNAME }}
-      GPG_SECRET_KEY_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write

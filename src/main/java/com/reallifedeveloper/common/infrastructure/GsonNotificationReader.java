@@ -163,7 +163,6 @@ public final class GsonNotificationReader implements NotificationReader {
             return jsonElement;
         }
 
-        @SuppressWarnings("PMD.CompareObjectsWithEquals")
         private static boolean isNull(JsonElement jsonElement) {
             return jsonElement == null || jsonElement == JsonNull.INSTANCE;
         }

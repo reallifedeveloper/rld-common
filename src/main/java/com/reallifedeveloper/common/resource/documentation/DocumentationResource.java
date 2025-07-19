@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -29,6 +30,7 @@ import com.reallifedeveloper.common.resource.ResourceUtil;
  *
  * @author RealLifeDeveloper
  */
+@SuppressFBWarnings(value = "JAXRS_ENDPOINT", justification = "Please ensure the JAX-RS REST endpoints here are used in a secure way")
 public final class DocumentationResource extends BaseResource {
 
     private static final String CONTENT_TYPE_HTML = MediaType.TEXT_HTML + "; charset=UTF-8";

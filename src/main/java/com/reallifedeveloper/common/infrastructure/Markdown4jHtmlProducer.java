@@ -1,5 +1,7 @@
 package com.reallifedeveloper.common.infrastructure;
 
+import static com.reallifedeveloper.common.domain.LogUtil.removeCRLF;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +27,7 @@ public final class Markdown4jHtmlProducer implements HtmlProducer {
 
     @Override
     public String produce(String resourceName) throws IOException {
-        LOG.trace("produce: resourceName={}", resourceName);
+        LOG.trace("produce: resourceName={}", removeCRLF(resourceName));
         if (resourceName == null) {
             throw new IllegalArgumentException("resourceName must not be null");
         }
@@ -34,7 +36,7 @@ public final class Markdown4jHtmlProducer implements HtmlProducer {
                 throw new FileNotFoundException("Resource not found: " + resourceName);
             }
             String html = "<html>" + markdownProcessor.process(in) + "</html>";
-            LOG.trace("produce: {}", html);
+            LOG.trace("produce: {}", removeCRLF(html));
             return html;
         }
     }

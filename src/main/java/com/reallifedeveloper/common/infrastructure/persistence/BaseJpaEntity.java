@@ -52,11 +52,11 @@ public class BaseJpaEntity<ID> {
      * Make finalize method final to avoid "Finalizer attacks" and corresponding SpotBugs warning (CT_CONSTRUCTOR_THROW).
      *
      * @see <a href="https://wiki.sei.cmu.edu/confluence/display/java/OBJ11-J.+Be+wary+of+letting+constructors+throw+exceptions">
-     * Explanation of finalizer attack</a>
+     *      Explanation of finalizer attack</a>
      */
     @Override
     @Deprecated
-    @SuppressWarnings({ "checkstyle:NoFinalizer", "PMD.EmptyFinalizer", "PMD.EmptyMethodInAbstractClassShouldBeAbstract" })
+    @SuppressWarnings({ "checkstyle:NoFinalizer", "PMD.EmptyFinalizer" })
     protected final void finalize() throws Throwable {
         // Do nothing
     }

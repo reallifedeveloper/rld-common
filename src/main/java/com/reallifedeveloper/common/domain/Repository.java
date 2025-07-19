@@ -11,6 +11,7 @@ import java.util.Optional;
  * @param <T>  the type of objects managed by the repository
  * @param <ID> the type used to identify the objects
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface Repository<T, ID extends Serializable> {
 
     /**

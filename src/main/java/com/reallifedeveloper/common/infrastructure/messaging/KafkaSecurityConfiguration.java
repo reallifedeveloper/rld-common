@@ -7,8 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.SslConfigs;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
+
+import lombok.experimental.UtilityClass;
 
 /**
  * Utility class used to set the security-related Kafka configuration properties when creating consumers and producers.
@@ -17,6 +21,7 @@ import org.springframework.core.io.Resource;
  *
  * @author RealLifeDeveloper
  */
+@UtilityClass
 public final class KafkaSecurityConfiguration {
 
     /**
@@ -27,59 +32,43 @@ public final class KafkaSecurityConfiguration {
     /**
      * The configuration property to use to set the location of the truststore, supports {@code classpath} prefixes.
      */
-    public static final String SSL_TRUSTSTORE_LOCATION_CONFIGURATION_KEY = "ssl.truststore.location";
+    public static final String SSL_TRUSTSTORE_LOCATION_CONFIGURATION_KEY = SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
 
     /**
      * The configuration property to use to set the password of the truststore.
      */
-    public static final String SSL_TRUSTSTORE_PASSWORD_CONFIGURATION_KEY = "ssl.truststore.password";
+    public static final String SSL_TRUSTSTORE_PASSWORD_CONFIGURATION_KEY = SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
 
     /**
      * The configuration property to use to set the SASL mechanism, e.g., {@code PLAIN}.
      */
-    public static final String SASL_MECHNISM_CONFIGURATION_KEY = "sasl.mechanism";
+    public static final String SASL_MECHNISM_CONFIGURATION_KEY = SaslConfigs.SASL_MECHANISM;
 
     /**
      * The configuration property to use to set the JAAS config.
      */
-    public static final String SASL_JAAS_CONFIG_CONFIGURATION_KEY = "sasl.jaas.config";
-
-    /**
-     * The configuration property to use to set the default auto commit interval, in milliseconds.
-     */
-    public static final int DEFAULT_CONSUMER_AUTO_COMMIT_INTERVAL_MS = 1_000;
-
-    /**
-     * The configuration property to use to set the default session timeout, in milliseconds.
-     */
-    public static final int DEFAULT_CONSUMER_SESSION_TIMEOUT_MS = 15_000;
+    public static final String SASL_JAAS_CONFIG_CONFIGURATION_KEY = SaslConfigs.SASL_JAAS_CONFIG;
 
     private static final DefaultResourceLoader RESOURCE_LOADER = new DefaultResourceLoader();
-
-    private KafkaSecurityConfiguration() {
-        // Hide the constructor since this is a utility class containing only static methods.
-    }
 
     /**
      * Sets the value of a configuration property.
      * <p>
-     * A value can be set only once for a particular property; trying to reset a value causes an exception
-     * to be thrown.
+     * A value can be set only once for a particular property; trying to reset a value causes an exception to be thrown.
      * <p>
-     * There is special handling of the {@value #SSL_TRUSTSTORE_LOCATION_CONFIGURATION_KEY} configuration property,
-     * with support for reading a trust store from the classpath if the configuration value starts with
-     * {@code classpath:}.
+     * There is special handling of the {@value #SSL_TRUSTSTORE_LOCATION_CONFIGURATION_KEY} configuration property, with support for reading
+     * a trust store from the classpath if the configuration value starts with {@code classpath:}.
      * <p>
-     * In the case that the {@value #SSL_TRUSTSTORE_LOCATION_CONFIGURATION_KEY} value starts with {@code classpath:},
-     * the trust store is read as a resource using the current thread's context classloader. The store is copied to a
-     * temporary file, and the path of the file is used as the value to set.
+     * In the case that the {@value #SSL_TRUSTSTORE_LOCATION_CONFIGURATION_KEY} value starts with {@code classpath:}, the trust store is
+     * read as a resource using the current thread's context classloader. The store is copied to a temporary file, and the path of the file
+     * is used as the value to set.
      *
-     * @param configurationKey the configuration key to apply
-     * @param configurationValue the configuration value
+     * @param configurationKey        the configuration key to apply
+     * @param configurationValue      the configuration value
      * @param configurationProperties the currently set configuration properties
      *
      * @throws IllegalStateException if trying to reset a value
-     * @throws IOException if reading the trust store from classpath fails
+     * @throws IOException           if reading the trust store from classpath fails
      */
     public static void applySecurityConfiguration(final String configurationKey, final String configurationValue,
             final Map<String, Object> configurationProperties) throws IOException {

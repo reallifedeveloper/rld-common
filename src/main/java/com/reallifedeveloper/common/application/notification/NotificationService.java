@@ -1,5 +1,7 @@
 package com.reallifedeveloper.common.application.notification;
 
+import static com.reallifedeveloper.common.domain.LogUtil.removeCRLF;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +74,7 @@ public class NotificationService {
      * @return an archived {@code NotificationLog}
      */
     @Transactional(readOnly = true)
+    @SuppressFBWarnings(value = "CRLF_INJECTION_LOGS", justification = "Logging only of objects, not user data")
     public NotificationLog notificationLog(NotificationLogId notificationLogId) {
         LOG.trace("notificationLog: notificationLogId={}", notificationLogId);
         ErrorHandling.checkNull("notificationLogId must not be null", notificationLogId);
@@ -121,7 +124,7 @@ public class NotificationService {
      */
     @Transactional
     public void publishNotifications(String publicationChannel) throws IOException {
-        LOG.trace("publishNotifications: publicationChannel={}", publicationChannel);
+        LOG.trace("publishNotifications: publicationChannel={}", removeCRLF(publicationChannel));
         PublishedMessageTracker messageTracker = messageTracker(publicationChannel);
         List<Notification> notifications = unpublishedNotifications(messageTracker.lastPublishedMessageId());
         notificationPublisher.publish(notifications, publicationChannel);
@@ -155,7 +158,7 @@ public class NotificationService {
      */
     @Override
     @Deprecated
-    @SuppressWarnings({ "checkstyle:NoFinalizer", "PMD.EmptyFinalizer", "PMD.EmptyMethodInAbstractClassShouldBeAbstract" })
+    @SuppressWarnings({ "checkstyle:NoFinalizer", "PMD.EmptyFinalizer" })
     protected final void finalize() throws Throwable {
         // Do nothing
     }

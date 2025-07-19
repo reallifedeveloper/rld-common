@@ -7,6 +7,7 @@ import java.time.ZonedDateTime;
  *
  * @author RealLifeDeveloper
  */
+@FunctionalInterface
 public interface TimeService {
 
     /**

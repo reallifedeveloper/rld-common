@@ -1,5 +1,7 @@
 package com.reallifedeveloper.common.domain.event;
 
+import static com.reallifedeveloper.common.domain.LogUtil.removeCRLF;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +16,7 @@ public class LoggingDomainEventSubscriber implements DomainEventSubscriber<Domai
 
     @Override
     public void handleEvent(DomainEvent event) {
-        LOG.info(event.toString());
+        LOG.info(removeCRLF(event));
     }
 
     @Override

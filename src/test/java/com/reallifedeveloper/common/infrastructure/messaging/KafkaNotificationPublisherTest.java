@@ -3,7 +3,7 @@ package com.reallifedeveloper.common.infrastructure.messaging;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.easymock.EasyMock;
@@ -47,11 +47,7 @@ public class KafkaNotificationPublisherTest {
     }
 
     public static List<Notification> toNotifications(DomainEvent... domainEvents) {
-        List<Notification> notifications = new ArrayList<>();
-        for (DomainEvent domainEvent : domainEvents) {
-            notifications.add(Notification.create(domainEvent, nextStoredEventId++));
-        }
-        return notifications;
+        return Arrays.stream(domainEvents).map(de -> Notification.create(de, nextStoredEventId++)).toList();
     }
 
     @Test

@@ -20,7 +20,6 @@ import com.reallifedeveloper.common.domain.ErrorHandling;
  */
 @Entity
 @Table(name = "stored_event")
-@SuppressWarnings("PMD.DataClass")
 public class StoredEvent {
 
     private static final int MAX_EVENT_BODY_LENGTH = 8000;

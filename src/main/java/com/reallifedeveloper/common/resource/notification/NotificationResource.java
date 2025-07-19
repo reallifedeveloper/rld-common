@@ -1,9 +1,12 @@
 package com.reallifedeveloper.common.resource.notification;
 
+import static com.reallifedeveloper.common.domain.LogUtil.removeCRLF;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -31,6 +34,7 @@ import com.reallifedeveloper.common.resource.ResourceUtil;
 @Path("/notifications")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @SuppressWarnings("PMD.AvoidCatchingGenericException")
+@SuppressFBWarnings(value = "JAXRS_ENDPOINT", justification = "Please ensure the JAX-RS REST endpoints here are used in a secure way")
 public final class NotificationResource extends BaseResource {
 
     /**
@@ -99,7 +103,7 @@ public final class NotificationResource extends BaseResource {
     @Path("{notificationLogId}")
     public Response getNotificationLog(@PathParam("notificationLogId") String notificationLogIdString, @Context UriInfo uriInfo) {
         try {
-            logger().debug("getNotificationLog: notificationLogIdString={}", notificationLogIdString);
+            logger().debug("getNotificationLog: notificationLogIdString={}", removeCRLF(notificationLogIdString));
             NotificationLogId notificationLogId = new NotificationLogId(notificationLogIdString);
             NotificationLog notificationLog = notificationService.notificationLog(notificationLogId);
             Links links = new Links(notificationLog, uriInfo);

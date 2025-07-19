@@ -2,92 +2,182 @@ package com.reallifedeveloper.common.domain;
 
 import static com.reallifedeveloper.common.domain.ErrorHandling.checkNull;
 import static com.reallifedeveloper.common.domain.ErrorHandling.checkNullOrBlank;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 public class ErrorHandlingTest {
 
     @Test
-    public void checkNullSingleArgumentIsNull() {
-        Exception e = assertThrows(IllegalArgumentException.class, () -> checkNull("Arguments must not be null: foo=%s", null));
-        assertEquals("Arguments must not be null: foo=null", e.getMessage());
+    public void checkNullOneArgument() {
+        String mssageTemplate = "arg1 must not be null";
+        testCheckNull(mssageTemplate, "arg1 must not be null", (Object) null);
+        testCheckNull(mssageTemplate, null, "arg1");
     }
 
     @Test
-    public void checkNullSingleArgumentIsNullWithMessageTemplateThatDoesNotUseArgument() {
-        Exception e = assertThrows(IllegalArgumentException.class, () -> checkNull("foo must not be null", null));
-        assertEquals("foo must not be null", e.getMessage());
+    public void checkNullTwoArguments() {
+        String mssageTemplate = "Arguments must not be null: arg1=%s, arg2=%s";
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=null, arg2=arg2", null, "arg2");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=null", "arg1", null);
+        testCheckNull(mssageTemplate, null, "arg1", "arg2");
     }
 
     @Test
-    public void checkNullSingleArgumentIsNonNull() {
-        // Check that no exception is thrown:
-        checkNull("Arguments must not be null: foo=%s", "foo");
+    public void checkNullThreeArguments() {
+        String mssageTemplate = "Arguments must not be null: arg1=%s, arg2=%s, arg3=%s";
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=null, arg2=arg2, arg3=arg3", null, "arg2", "arg3");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=null, arg3=arg3", "arg1", null, "arg3");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=null", "arg1", "arg2", null);
+        testCheckNull(mssageTemplate, null, "arg1", "arg2", "arg3");
     }
 
     @Test
-    public void checkNullTwoArgumentsFirstIsNull() {
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> checkNull("Arguments must not be null: foo=%s, bar=%s", null, "bar"));
-        assertEquals("Arguments must not be null: foo=null, bar=bar", e.getMessage());
+    public void checkNullFourArguments() {
+        String mssageTemplate = "Arguments must not be null: arg1=%s, arg2=%s, arg3=%s, arg4=%s";
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=null, arg2=arg2, arg3=arg3, arg4=arg4", null, "arg2", "arg3",
+                "arg4");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=null, arg3=arg3, arg4=arg4", "arg1", null, "arg3",
+                "arg4");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=null, arg4=arg4", "arg1", "arg2", null,
+                "arg4");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=null", "arg1", "arg2", "arg3",
+                null);
+        testCheckNull(mssageTemplate, null, "arg1", "arg2", "arg3", "arg4");
     }
 
     @Test
-    public void checkNullTwoArgumentsSecondIsNull() {
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> checkNull("Arguments must not be null: foo=%s, bar=%s", "foo", null));
-        assertEquals("Arguments must not be null: foo=foo, bar=null", e.getMessage());
+    public void checkNullFiveArguments() {
+        String mssageTemplate = "Arguments must not be null: arg1=%s, arg2=%s, arg3=%s, arg4=%s, arg5=%s";
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=null, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5", null, "arg2",
+                "arg3", "arg4", "arg5");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=null, arg3=arg3, arg4=arg4, arg5=arg5", "arg1", null,
+                "arg3", "arg4", "arg5");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=null, arg4=arg4, arg5=arg5", "arg1", "arg2",
+                null, "arg4", "arg5");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=null, arg5=arg5", "arg1", "arg2",
+                "arg3", null, "arg5");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=null", "arg1", "arg2",
+                "arg3", "arg4", null);
+        testCheckNull(mssageTemplate, null, "arg1", "arg2", "arg3", "arg4", "arg5");
     }
 
     @Test
-    public void checkNullTwoArgumentsBothAreNonNull() {
-        // Check that no exception is thrown:
-        checkNull("Arguments must not be null: foo=%s", "foo", "bar");
+    public void checkNullSixArguments() {
+        String mssageTemplate = "Arguments must not be null: arg1=%s, arg2=%s, arg3=%s, arg4=%s, arg5=%s, arg6=%s";
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=null, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6", null,
+                "arg2", "arg3", "arg4", "arg5", "arg6");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=null, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6",
+                "arg1", null, "arg3", "arg4", "arg5", "arg6");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=null, arg4=arg4, arg5=arg5, arg6=arg6",
+                "arg1", "arg2", null, "arg4", "arg5", "arg6");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=null, arg5=arg5, arg6=arg6",
+                "arg1", "arg2", "arg3", null, "arg5", "arg6");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=null, arg6=arg6",
+                "arg1", "arg2", "arg3", "arg4", null, "arg6");
+        testCheckNull(mssageTemplate, "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=null",
+                "arg1", "arg2", "arg3", "arg4", "arg5", null);
+        testCheckNull(mssageTemplate, null, "arg1", "arg2", "arg3", "arg4", "arg5", "arg6");
     }
 
     @Test
-    public void checkNullThreeArgumentsFirstIsNull() {
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> checkNull("Arguments must not be null: foo=%s, bar=%s, baz=%s", null, "bar", "baz"));
-        assertEquals("Arguments must not be null: foo=null, bar=bar, baz=baz", e.getMessage());
+    public void checkNullSevenArguments() {
+        String mssageTemplate = "Arguments must not be null: arg1=%s, arg2=%s, arg3=%s, arg4=%s, arg5=%s, arg6=%s, arg7=%s";
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=null, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7", null, "arg2",
+                "arg3", "arg4", "arg5", "arg6", "arg7");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=null, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7", "arg1", null,
+                "arg3", "arg4", "arg5", "arg6", "arg7");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=null, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7", "arg1", "arg2",
+                null, "arg4", "arg5", "arg6", "arg7");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=null, arg5=arg5, arg6=arg6, arg7=arg7", "arg1", "arg2",
+                "arg3", null, "arg5", "arg6", "arg7");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=null, arg6=arg6, arg7=arg7", "arg1", "arg2",
+                "arg3", "arg4", null, "arg6", "arg7");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=null, arg7=arg7", "arg1", "arg2",
+                "arg3", "arg4", "arg5", null, "arg7");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=null", "arg1", "arg2",
+                "arg3", "arg4", "arg5", "arg6", null);
+        testCheckNull(mssageTemplate, null, "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7");
     }
 
     @Test
-    public void checkNullThreeArgumentsSecondIsNull() {
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> checkNull("Arguments must not be null: foo=%s, bar=%s, baz=%s", "foo", null, "baz"));
-        assertEquals("Arguments must not be null: foo=foo, bar=null, baz=baz", e.getMessage());
+    public void checkNullEightArguments() {
+        String mssageTemplate = "Arguments must not be null: arg1=%s, arg2=%s, arg3=%s, arg4=%s, arg5=%s, arg6=%s, arg7=%s, arg8=%s";
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=null, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7, arg8=arg8", null,
+                "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=null, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7, arg8=arg8",
+                "arg1", null, "arg3", "arg4", "arg5", "arg6", "arg7", "arg8");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=null, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7, arg8=arg8",
+                "arg1", "arg2", null, "arg4", "arg5", "arg6", "arg7", "arg8");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=null, arg5=arg5, arg6=arg6, arg7=arg7, arg8=arg8",
+                "arg1", "arg2", "arg3", null, "arg5", "arg6", "arg7", "arg8");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=null, arg6=arg6, arg7=arg7, arg8=arg8",
+                "arg1", "arg2", "arg3", "arg4", null, "arg6", "arg7", "arg8");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=null, arg7=arg7, arg8=arg8",
+                "arg1", "arg2", "arg3", "arg4", "arg5", null, "arg7", "arg8");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=null, arg8=arg8",
+                "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", null, "arg8");
+        testCheckNull(mssageTemplate,
+                "Arguments must not be null: arg1=arg1, arg2=arg2, arg3=arg3, arg4=arg4, arg5=arg5, arg6=arg6, arg7=arg7, arg8=null",
+                "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", null);
+        testCheckNull(mssageTemplate, null, "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8");
     }
 
-    @Test
-    public void checkNullThreeArgumentsThirdIsNull() {
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> checkNull("Arguments must not be null: foo=%s, bar=%s, baz=%s", "foo", "bar", null));
-        assertEquals("Arguments must not be null: foo=foo, bar=bar, baz=null", e.getMessage());
-    }
+    private static void testCheckNull(String messageTemplate, String expectedMessage, Object... args) {
+        Executable checkNullCall;
+        switch (args.length) {
+        case 1:
+            checkNullCall = () -> checkNull(messageTemplate, args[0]);
+            break;
+        case 2:
+            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1]);
+            break;
+        case 3:
+            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2]);
+            break;
+        case 4:
+            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3]);
+            break;
+        case 5:
+            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4]);
+            break;
+        case 6:
+            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5]);
+            break;
+        case 7:
+            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+            break;
+        case 8:
+            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
+            break;
+        default:
+            throw new IllegalStateException("Unexepcted number of argumets: " + args.length);
+        }
 
-    @Test
-    public void checkNullThreeArgumentsAllAreNonNull() {
-        Assertions.assertDoesNotThrow(() -> {
-            checkNull("Arguments must not be null: foo=%s", "foo", "bar", "baz");
-        });
-    }
+        if (expectedMessage == null) {
+            assertDoesNotThrow(checkNullCall);
+        } else {
+            Exception expectedException = assertThrows(IllegalArgumentException.class, checkNullCall);
+            assertEquals(expectedMessage, expectedException.getMessage());
+        }
 
-    @Test
-    public void checkNullFourArgumentsAllAreNonNull() {
-        Assertions.assertDoesNotThrow(() -> {
-            checkNull("Arguments must not be null: foo=%s", "foo", "bar", "baz", "hoo");
-        });
-    }
-
-    @Test
-    public void checkNullArgumentsFourthIsNull() {
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> checkNull("Arguments must not be null: foo=%s, bar=%s, baz=%s, hoo=%s", "foo", "bar", "baz", null));
-        assertEquals("Arguments must not be null: foo=foo, bar=bar, baz=baz, hoo=null", e.getMessage());
     }
 
     @Test
@@ -97,7 +187,7 @@ public class ErrorHandlingTest {
     }
 
     @Test
-    public void checkNullWithNullArguments() {
+    public void checkNullWithNullParameterArray() {
         // This test is to show that there is no way to call checkNullInternal with a null array, it will always be an array
         // that may contain null.
         Exception e = assertThrows(IllegalArgumentException.class, () -> checkNull("foo: %s", (Object[]) null));

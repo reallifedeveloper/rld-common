@@ -1,5 +1,7 @@
 package com.reallifedeveloper.common.infrastructure.messaging;
 
+import static com.reallifedeveloper.common.domain.LogUtil.removeCRLF;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -44,7 +46,9 @@ public final class KafkaNotificationPublisher implements NotificationPublisher {
     @Override
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // TODO: Remove this
     public void publish(List<Notification> notifications, String publicationChannel) throws IOException {
-        LOG.trace("publish: notifications={}, publicationChannel={}", notifications, publicationChannel);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("publish: notifications={}, publicationChannel={}", removeCRLF(notifications), removeCRLF(publicationChannel));
+        }
         for (Notification notification : notifications) {
             String key = notification.eventType();
             String message = objectSerializer.serialize(notification);
