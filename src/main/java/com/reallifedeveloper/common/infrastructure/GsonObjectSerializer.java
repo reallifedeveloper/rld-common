@@ -36,15 +36,15 @@ public class GsonObjectSerializer implements ObjectSerializer<String> {
     public static final String DATE_FORMAT = "yyyy-MM-dd";
 
     /**
-     * The format used to parse and format {@code java.time.LocalDateTime} objects. The string is a pattern that can be
-     * used by a {@code DateTimeFormatter}.
+     * The format used to parse and format {@code java.time.LocalDateTime} objects. The string is a pattern that can be used by a
+     * {@code DateTimeFormatter}.
      */
     public static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
     /**
-    * The format used to parse and format {@code java.time.ZonedDateTime} objects. The string is a pattern that can be
-    * used by a {@code DateTimeFormatter}.
-    */
+     * The format used to parse and format {@code java.time.ZonedDateTime} objects. The string is a pattern that can be used by a
+     * {@code DateTimeFormatter}.
+     */
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
@@ -59,12 +59,10 @@ public class GsonObjectSerializer implements ObjectSerializer<String> {
      * The default values include using the pattern {@value #DATE_TIME_FORMAT} when working with {@code java.time.ZonedDateTime} objects.
      */
     public GsonObjectSerializer() {
-        gson = new GsonBuilder().setDateFormat(DATE_TIME_FORMAT)
-                .registerTypeAdapter(Notification.class, new NotificationDeserializer())
+        gson = new GsonBuilder().setDateFormat(DATE_TIME_FORMAT).registerTypeAdapter(Notification.class, new NotificationDeserializer())
                 .registerTypeAdapter(LocalDate.class, new LocalDateAdapter().nullSafe())
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTmeAdapter().nullSafe())
-                .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTmeAdapter().nullSafe())
-                .create();
+                .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTmeAdapter().nullSafe()).create();
     }
 
     @Override
@@ -76,12 +74,12 @@ public class GsonObjectSerializer implements ObjectSerializer<String> {
     public <U> U deserialize(String serializedObject, Class<U> objectType) {
         if (serializedObject == null || objectType == null) {
             throw new IllegalArgumentException(
-                    "Arguments must not be null: serializedEvent=" + serializedObject + ", eventType=" + objectType);
+                    "Arguments must not be null: serializedObject=" + serializedObject + ", objectType=" + objectType);
         }
         try {
             return gson.fromJson(serializedObject, objectType);
         } catch (JsonSyntaxException e) {
-            throw new IllegalArgumentException("serializedEvent cannot be parsed as JSON: " + serializedObject, e);
+            throw new IllegalArgumentException("serializedObject cannot be parsed as JSON: " + serializedObject, e);
         }
     }
 
@@ -102,7 +100,7 @@ public class GsonObjectSerializer implements ObjectSerializer<String> {
                 ErrorHandling.checkNull("JSON notification is missing event: json=" + json, event);
                 return new Notification(eventType, storedEventId, occurredOn, event);
             } catch (ClassNotFoundException e) {
-                throw new IllegalStateException("Internal error: ", e);
+                throw new IllegalStateException("Internal error: " + e.toString(), e);
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.reallifedeveloper.common.resource.notification;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -69,5 +71,15 @@ public class NotificationLogRepresentationTest {
                 (low - batchSize) + "," + (high - batchSize));
         return new NotificationLog(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId,
                 notifications, isArchived);
+    }
+
+    @Test
+    public void packagePrivateConstructorLeavesAllFieldsWithDefaultValues() {
+        NotificationLogRepresentation notificationLogRepresentation = new NotificationLogRepresentation();
+        assertNull(notificationLogRepresentation.getSelf());
+        assertNull(notificationLogRepresentation.getNext());
+        assertNull(notificationLogRepresentation.getPrevious());
+        assertFalse(notificationLogRepresentation.isArchived());
+        assertTrue(notificationLogRepresentation.notifications().isEmpty());
     }
 }

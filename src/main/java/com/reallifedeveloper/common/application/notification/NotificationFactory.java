@@ -1,10 +1,10 @@
 package com.reallifedeveloper.common.application.notification;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.reallifedeveloper.common.application.eventstore.EventStore;
 import com.reallifedeveloper.common.application.eventstore.StoredEvent;
+import com.reallifedeveloper.common.domain.ErrorHandling;
 import com.reallifedeveloper.common.domain.event.DomainEvent;
 
 /**
@@ -17,9 +17,7 @@ public final class NotificationFactory {
     private final EventStore eventStore;
 
     private NotificationFactory(EventStore eventStore) {
-        if (eventStore == null) {
-            throw new IllegalArgumentException("eventStore must not be null");
-        }
+        ErrorHandling.checkNull("eventStore must not be null", eventStore);
         this.eventStore = eventStore;
     }
 
@@ -54,13 +52,7 @@ public final class NotificationFactory {
      * @return a list of {@code Notifications} for the stored events
      */
     public List<Notification> fromStoredEvents(List<StoredEvent> storedEvents) {
-        if (storedEvents == null) {
-            throw new IllegalArgumentException("storedEvents must not be null");
-        }
-        List<Notification> notifications = new ArrayList<>(storedEvents.size());
-        for (StoredEvent storedEvent : storedEvents) {
-            notifications.add(fromStoredEvent(storedEvent));
-        }
-        return notifications;
+        ErrorHandling.checkNull("storedEvents must not be null", storedEvents);
+        return storedEvents.stream().map(this::fromStoredEvent).toList();
     }
 }

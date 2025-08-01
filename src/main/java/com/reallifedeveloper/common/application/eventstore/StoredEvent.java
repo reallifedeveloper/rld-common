@@ -2,14 +2,14 @@ package com.reallifedeveloper.common.application.eventstore;
 
 import java.time.ZonedDateTime;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 import com.reallifedeveloper.common.domain.ErrorHandling;
 
@@ -27,7 +27,7 @@ public class StoredEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "stored_event_id")
-    private Long id;
+    private @Nullable Long id;
 
     @Column(name = "event_type", nullable = false)
     private String eventType;
@@ -36,7 +36,6 @@ public class StoredEvent {
     private String eventBody;
 
     @Column(name = "occurred_on", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private ZonedDateTime occurredOn;
 
     @Column(name = "version", nullable = false)
@@ -61,8 +60,11 @@ public class StoredEvent {
         this.version = version;
     }
 
+    /**
+     * Required by Hibernate.
+     */
     /* package-private */ StoredEvent() {
-        // Required by Hibernate
+        // Intentionally empty
     }
 
     /**
@@ -70,7 +72,7 @@ public class StoredEvent {
      *
      * @return the ID of this {@code StoredEvent}
      */
-    public Long id() {
+    public @Nullable Long id() {
         return id;
     }
 

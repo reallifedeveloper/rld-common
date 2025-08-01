@@ -36,16 +36,19 @@ public final class KafkaNotificationPublisher implements NotificationPublisher {
      * @param kafkaTemplate    the {@code KafkaTemplate} to use
      * @param objectSerializer the {@code ObjectSerializer} to use
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "The KafkaTemplate is mutable, but that is OK")
+    @SuppressFBWarnings(value = { "EI_EXPOSE_REP2",
+            "CRLF_INJECTION_LOGS" }, justification = "The KafkaTemplate is mutable, but that is OK; Logging only of objects, not user data")
     public KafkaNotificationPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectSerializer<String> objectSerializer) {
         ErrorHandling.checkNull("Arguments must not be null: kafkaTemplate=%s, objectSerializer=%s", kafkaTemplate, objectSerializer);
+        LOG.info("Creating new {}: kafkaTemplate={}, objectSerializer={}", getClass().getSimpleName(), kafkaTemplate, objectSerializer);
         this.kafkaTemplate = kafkaTemplate;
         this.objectSerializer = objectSerializer;
     }
 
     @Override
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // TODO: Remove this
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Key can be null, but that is OK")
     public void publish(List<Notification> notifications, String publicationChannel) throws IOException {
+        ErrorHandling.checkNull("Arguments must not be null: notifications={}, publicationChannel={}", notifications, publicationChannel);
         if (LOG.isTraceEnabled()) {
             LOG.trace("publish: notifications={}, publicationChannel={}", removeCRLF(notifications), removeCRLF(publicationChannel));
         }

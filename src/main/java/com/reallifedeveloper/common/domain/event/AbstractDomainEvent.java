@@ -96,14 +96,11 @@ public abstract class AbstractDomainEvent implements DomainEvent {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
+        if (obj instanceof AbstractDomainEvent other) {
+            return Objects.equals(eventOccurredOn, other.eventOccurredOn) && eventVersion == other.eventVersion;
+        } else {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        AbstractDomainEvent other = (AbstractDomainEvent) obj;
-        return Objects.equals(eventOccurredOn, other.eventOccurredOn) && Objects.equals(eventVersion, other.eventVersion);
     }
 
     /**

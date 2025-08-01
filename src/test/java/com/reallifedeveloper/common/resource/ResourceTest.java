@@ -87,8 +87,8 @@ public class ResourceTest {
 
     @Test
     public void parseMalformedUrl() {
-        Exception e = assertThrows(IllegalArgumentException.class, () -> resource.parseUrl("foo"));
-        assertEquals("URI is not absolute", e.getMessage());
+        Exception e = assertThrows(IllegalArgumentException.class, () -> resource.parseUrl("foo:bar"));
+        assertEquals("The string 'foo:bar' could not be parsed as a url", e.getMessage());
     }
 
     @Test

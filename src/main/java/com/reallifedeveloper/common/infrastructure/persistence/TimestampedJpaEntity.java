@@ -7,8 +7,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 import com.reallifedeveloper.common.domain.ErrorHandling;
 import com.reallifedeveloper.common.domain.registry.CommonDomainRegistry;
@@ -24,11 +22,9 @@ import com.reallifedeveloper.common.domain.registry.CommonDomainRegistry;
 public class TimestampedJpaEntity<ID> extends BaseJpaEntity<ID> {
 
     @Column(name = "created", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private @Nullable ZonedDateTime created;
 
     @Column(name = "updated", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private @Nullable ZonedDateTime updated;
 
     /**
@@ -58,7 +54,7 @@ public class TimestampedJpaEntity<ID> extends BaseJpaEntity<ID> {
      * @param created the time and date the entity was created
      * @param updated the time and date the entity was last updated
      *
-     * @throws IllegalArgumentException if {@code created} or {@code update} is {@code null}
+     * @throws IllegalArgumentException if {@code created} or {@code updated} is {@code null}
      */
     protected TimestampedJpaEntity(ID id, ZonedDateTime created, ZonedDateTime updated) {
         super(id);

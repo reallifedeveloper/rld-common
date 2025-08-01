@@ -60,6 +60,15 @@ public class NotificationRepresentationTest {
                 exception.getMessage());
     }
 
+    @Test
+    public void packagePrivateConstructorLeavesAllFieldsWithDefaultValues() {
+        NotificationRepresentation representation = new NotificationRepresentation();
+        assertNull(representation.getEventType());
+        assertEquals(0, representation.getStoredEventId());
+        assertNull(representation.getOccurredOn());
+        assertNull(representation.getEvent());
+    }
+
     /**
      * An implementation of {@link DomainEvent} that allows {@code null} for the {@code occurredOn}
      * timestamp.

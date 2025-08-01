@@ -89,14 +89,13 @@ public class DocumentationResourceTest {
         assertEquals(164, data.length, "Wrong number of bytes in zip file");
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         byte[] hash = md.digest(data);
-        assertEquals("5d5b27f8e20c3db498f8fcc305ad34acd4fb6236",
-                DatatypeConverter.printHexBinary(hash).toLowerCase(), "Wrong hash for zip file");
+        assertEquals("5d5b27f8e20c3db498f8fcc305ad34acd4fb6236", DatatypeConverter.printHexBinary(hash).toLowerCase(),
+                "Wrong hash for zip file");
     }
 
     @Test
     public void getDocumentationNamedDocumentDoesNotExist() {
-        WebApplicationException exception = assertThrows(WebApplicationException.class,
-                () -> resource.getDocumentation("bar.txt"));
+        WebApplicationException exception = assertThrows(WebApplicationException.class, () -> resource.getDocumentation("bar.txt"));
         assertEquals(Status.NOT_FOUND.getStatusCode(), exception.getResponse().getStatus(), "Wrong status");
     }
 
@@ -107,6 +106,13 @@ public class DocumentationResourceTest {
         assertEquals(Status.MOVED_PERMANENTLY.getStatusCode(), response.getStatus(), "Wrong status");
         assertEquals(ENDPOINT_ADDRESS + "/doc/", response.getHeaderString("Location"), "Wrong location header");
         assertEquals(ENDPOINT_ADDRESS + "/doc/", response.getEntity(), "Wrong body");
+    }
+
+    @Test
+    public void redirectWihoutUriInfoThrowsException() {
+        DocumentationResource uninitializedResource = new DocumentationResource("/markdown", htmlProducer);
+        Exception e = assertThrows(IllegalStateException.class, () -> uninitializedResource.redirect());
+        assertEquals("uriInfo field has not been set, it is assumed to be injected by Jakarta", e.getMessage());
     }
 
     @Test

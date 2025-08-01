@@ -63,7 +63,7 @@ public class TestEvent extends AbstractDomainEvent {
 
     @Override
     public String toString() {
-        return "TestEvent{id=" + id() + ", name=" + name() + ", eventOccurredOn=" + eventOccurredOn() + ", eventVerion=" + eventVersion()
+        return "TestEvent{id=" + id() + ", name=" + name() + ", eventOccurredOn=" + eventOccurredOn() + ", eventVersion=" + eventVersion()
                 + "}";
     }
 

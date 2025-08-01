@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import com.reallifedeveloper.common.domain.ErrorHandling;
 import com.reallifedeveloper.common.domain.ObjectSerializer;
 import com.reallifedeveloper.common.domain.event.DomainEvent;
 
@@ -33,10 +34,8 @@ public final class EventStore {
      */
     @SuppressFBWarnings(value = "CRLF_INJECTION_LOGS", justification = "Logging only of objects, not user data")
     public EventStore(ObjectSerializer<String> serializer, StoredEventRepository repository) {
-        if (serializer == null || repository == null) {
-            throw new IllegalArgumentException("Arguments must not be null: serializer=" + serializer + ", repository=" + repository);
-        }
-        LOG.info("EventStore: serializer={}, repository={}", serializer, repository);
+        ErrorHandling.checkNull("Arguments must not be null: serializer=%s, repository=%s", serializer, repository);
+        LOG.info("Creating new EventStore: serializer={}, repository={}", serializer, repository);
         this.serializer = serializer;
         this.repository = repository;
     }
@@ -51,9 +50,7 @@ public final class EventStore {
         if (LOG.isTraceEnabled()) {
             LOG.trace("add: event={}", removeCRLF(event));
         }
-        if (event == null) {
-            throw new IllegalArgumentException("event must not be null");
-        }
+        ErrorHandling.checkNull("event must not be null", event);
         String serializedEvent = serializer.serialize(event);
         StoredEvent storedEvent = new StoredEvent(event.getClass().getName(), serializedEvent, event.eventOccurredOn(),
                 event.eventVersion());
@@ -101,9 +98,7 @@ public final class EventStore {
         if (LOG.isTraceEnabled()) {
             LOG.trace("toDomainEvent: storedEvent={}", removeCRLF(storedEvent));
         }
-        if (storedEvent == null) {
-            throw new IllegalArgumentException("storedEvent must not be null");
-        }
+        ErrorHandling.checkNull("storedEvent must not be null", storedEvent);
         try {
             @SuppressWarnings("unchecked")
             Class<T> eventClass = (Class<T>) Class.forName(storedEvent.eventType());

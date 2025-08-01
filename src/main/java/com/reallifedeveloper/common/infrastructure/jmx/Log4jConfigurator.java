@@ -1,6 +1,8 @@
 package com.reallifedeveloper.common.infrastructure.jmx;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Logger;
@@ -24,70 +26,50 @@ public class Log4jConfigurator implements LogConfiguratorMXBean {
     @Override
     @ManagedAttribute(description = "The available loggers")
     public List<String> getLoggers() {
-        return LoggerContext.getContext().getConfiguration().getLoggers().entrySet().stream()
-                .map(entry -> entry.getKey() + " = " + entry.getValue().getLevel()).toList();
-        // return LoggerContext.getContext().getLoggers().stream().map(logger -> logger.getName() + "=" + logger.getLevel()).toList();
-
-        // List<String> list = new ArrayList<String>();
-        // @SuppressWarnings("rawtypes")
-        // Enumeration loggers = LogManager.getCurrentLoggers();
-        // while (loggers.hasMoreElements()) {
-        // Logger logger = (Logger) loggers.nextElement();
-
-        // if (logger.getLevel() != null) {
-        // list.add(logger.getName() + " = " + logger.getLevel().toString());
-        // }
-        // }
-        // return list;
+        List<String> configLoggers = getContext().getConfiguration().getLoggers().entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue().getLevel()).toList();
+        List<String> contextLoggers = getContext().getLoggers().stream().map(l -> l.getName() + "=" + l.getLevel()).toList();
+        return Stream.concat(configLoggers.stream(), contextLoggers.stream()).distinct().toList();
     }
 
     @Override
     @ManagedOperation(description = "Gives the log level for a logger")
     @ManagedOperationParameters({ @ManagedOperationParameter(name = "logger", description = "The name of the logger") })
     public String getLogLevel(String loggerName) {
-        return getLogger(loggerName).getLevel().name();
-
-        // String levelName = "unavailable";
-
-        // if (isNotBlank(loggerName)) {
-        // Logger logger = Logger.getLogger(loggerName);
-
-        // if (logger != null) {
-        // Level level = logger.getLevel();
-        // if (level != null) {
-        // levelName = level.toString();
-        // }
-        // }
-        // }
-        // return levelName;
+        return getLoggerIfExists(loggerName).map(l -> l.getLevel().name()).orElse("unavailable");
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * If {@code level} cannot be parsed as a log level, the level is assumed to be {@code DEBUG}.
-     */
     @Override
     @ManagedOperation(description = "Sets the log level for a logger")
     @ManagedOperationParameters({ @ManagedOperationParameter(name = "logger", description = "The name of the logger"),
             @ManagedOperationParameter(name = "level", description = "The new log level") })
     public void setLogLevel(String loggerName, String level) {
         if (isNotBlank(loggerName) && isNotBlank(level)) {
-            getLogger(loggerName).setLevel(Level.getLevel(level));
+            Level logLevel = Level.getLevel(level);
+            if (logLevel != null) {
+                Logger logger = getOrCreateLogger(loggerName);
+                logger.setLevel(logLevel);
+            }
         }
-
-        // if (isNotBlank(loggerName) && isNotBlank(level)) {
-        // Logger logger = Logger.getLogger(loggerName);
-
-        // if (logger != null) {
-        // logger.setLevel(Level.toLevel(level.toUpperCase(Locale.ROOT)));
-        // }
-        // }
     }
 
-    private static Logger getLogger(String loggerName) {
+    @SuppressWarnings("PMD.CloseResource") // Closing the LoggerContext shuts down logging.
+    private static Optional<Logger> getLoggerIfExists(String loggerName) {
         ErrorHandling.checkNull("loggerName must not be null", loggerName);
-        return LoggerContext.getContext().getLogger(loggerName);
+        LoggerContext context = getContext();
+        if (context.hasLogger(loggerName) || context.getConfiguration().getLoggers().containsKey(loggerName)) {
+            return Optional.of(context.getLogger(loggerName));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private static Logger getOrCreateLogger(String loggerName) {
+        return getContext().getLogger(loggerName);
+    }
+
+    private static LoggerContext getContext() {
+        return LoggerContext.getContext();
     }
 
     private static boolean isNotBlank(String s) {

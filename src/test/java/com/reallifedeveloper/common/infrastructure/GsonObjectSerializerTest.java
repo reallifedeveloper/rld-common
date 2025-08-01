@@ -23,6 +23,14 @@ import com.reallifedeveloper.common.test.TestUtil;
 
 public class GsonObjectSerializerTest {
 
+    private static final String SERIALIZED_NOTIFICATION_WITHOUT_EVENT = """
+            {
+                "eventType":"%s",
+                "storedEventId":42,
+                "eventVersion":1
+            }
+            """;
+
     private final GsonObjectSerializer serializer = new GsonObjectSerializer();
 
     @Test
@@ -50,16 +58,16 @@ public class GsonObjectSerializerTest {
 
     @Test
     public void deserializeNotificationWithEmptyEvent() {
-        String serializedNotificationWithoutEvent = """
-                {
-                    "eventType":"%s",
-                    "storedEventId":42,
-                    "eventVersion":1
-                }
-                """.formatted(TestEvent.class.getName()).replaceAll("\\s", "");
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> serializer.deserialize(serializedNotificationWithoutEvent, Notification.class));
-        assertEquals("JSON notification is missing event: json=" + serializedNotificationWithoutEvent, e.getMessage());
+        String json = SERIALIZED_NOTIFICATION_WITHOUT_EVENT.formatted(TestEvent.class.getName()).replaceAll("\\s", "");
+        Exception e = assertThrows(IllegalArgumentException.class, () -> serializer.deserialize(json, Notification.class));
+        assertEquals("JSON notification is missing event: json=" + json, e.getMessage());
+    }
+
+    @Test
+    public void deserializeNotificationWithEmptyEventAndUnknownEventType() {
+        String json = SERIALIZED_NOTIFICATION_WITHOUT_EVENT.formatted("foo.Bar").replaceAll("\\s", "");
+        Exception e = assertThrows(IllegalArgumentException.class, () -> serializer.deserialize(json, Notification.class));
+        assertEquals("serializedObject cannot be parsed as JSON: " + json, e.getMessage());
     }
 
     @Test

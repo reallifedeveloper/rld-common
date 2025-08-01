@@ -3,6 +3,7 @@ package com.reallifedeveloper.common.infrastructure.messaging;
 import static com.reallifedeveloper.common.domain.LogUtil.removeCRLF;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -41,9 +42,13 @@ public final class RabbitMQNotificationPublisher implements NotificationPublishe
      * @param connectionFactory the {@code ConnectionFactory} to use to create connections to RabbitMQ
      * @param objectSerializer  the {@code ObjectSerializer} to use to serialize notifications
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "The ConnectionFactory is mutable, but that is OK")
+    @SuppressFBWarnings(value = { "EI_EXPOSE_REP2",
+            "CRLF_INJECTION_LOGS" }, justification = "The ConnectionFactory is mutable, but that is OK; "
+                    + "Logging only of objects, not user data")
     public RabbitMQNotificationPublisher(ConnectionFactory connectionFactory, ObjectSerializer<String> objectSerializer) {
         ErrorHandling.checkNull("Arguments must not be null: connectionFactory=%s, objectSerializer=%s", connectionFactory,
+                objectSerializer);
+        LOG.info("Creating new {}: connectionFactory={}, objectSerializer={}", getClass().getSimpleName(), connectionFactory,
                 objectSerializer);
         this.connectionFactory = connectionFactory;
         this.objectSerializer = objectSerializer;
@@ -59,7 +64,7 @@ public final class RabbitMQNotificationPublisher implements NotificationPublishe
             try (Connection connection = connectionFactory.newConnection(); Channel channel = connection.createChannel()) {
                 for (Notification notification : notifications) {
                     String message = objectSerializer.serialize(notification);
-                    channel.basicPublish(publicationChannel, "", EMPTY_PROPERTIES, message.getBytes("UTF-8"));
+                    channel.basicPublish(publicationChannel, "", EMPTY_PROPERTIES, message.getBytes(StandardCharsets.UTF_8));
                 }
             } catch (TimeoutException e) {
                 throw new IOException("Timeout occurred", e);

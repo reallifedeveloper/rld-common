@@ -1,5 +1,7 @@
 package com.reallifedeveloper.common.domain;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import lombok.experimental.UtilityClass;
 
 /**
@@ -23,7 +25,7 @@ public class LogUtil {
      * @return {@code s} with all occurrences of CR and LF removed
      */
     @SuppressWarnings({ "checkstyle:noReturnNull" })
-    public static String removeCRLF(String s) {
+    public static @Nullable String removeCRLF(@Nullable String s) {
         if (s == null) {
             return null;
         } else {
@@ -42,7 +44,7 @@ public class LogUtil {
      * @return {@code o.toString()} with all occurrences of CR and LF removed, or {@code null} if {@code o} is {@code null}
      */
     @SuppressWarnings({ "checkstyle:noReturnNull" })
-    public static String removeCRLF(Object o) {
+    public static @Nullable String removeCRLF(@Nullable Object o) {
         if (o == null) {
             return null;
         } else {

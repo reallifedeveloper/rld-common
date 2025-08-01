@@ -110,12 +110,8 @@ public class RabbitMQNotificationPublisherIT {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(host);
         factory.setPort(port);
-        if (username != null) {
-            factory.setUsername(username);
-        }
-        if (password != null) {
-            factory.setPassword(password);
-        }
+        factory.setUsername(username);
+        factory.setPassword(password);
         return new RabbitMQNotificationPublisher(factory, objectSerializer);
     }
 
