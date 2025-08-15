@@ -100,18 +100,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>checker-qual</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -181,70 +171,5 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.reallifedeveloper</groupId>
-                        <artifactId>rld-build-tools</artifactId>
-                        <version>${rld-build-tools.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.reallifedeveloper</groupId>
-                        <artifactId>rld-build-tools</artifactId>
-                        <version>${rld-build-tools.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.reallifedeveloper</groupId>
-                        <artifactId>rld-build-tools</artifactId>
-                        <version>${rld-build-tools.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <!-- Unpacks XML files from the rld-build-tools project to the target directory. -->
-                <!-- This is necessary since the OWASP dependency-check-maven plugin can only read files, -->
-                <!-- not resources in classpath. -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.reallifedeveloper</groupId>
-                                    <artifactId>rld-build-tools</artifactId>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                                    <includes>**/*.xml</includes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
