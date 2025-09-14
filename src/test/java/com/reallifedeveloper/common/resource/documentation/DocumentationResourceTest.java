@@ -89,8 +89,7 @@ public class DocumentationResourceTest {
         assertEquals(164, data.length, "Wrong number of bytes in zip file");
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         byte[] hash = md.digest(data);
-        assertEquals("5d5b27f8e20c3db498f8fcc305ad34acd4fb6236", DatatypeConverter.printHexBinary(hash).toLowerCase(),
-                "Wrong hash for zip file");
+        assertEquals("5D5B27F8E20C3DB498F8FCC305AD34ACD4FB6236", DatatypeConverter.printHexBinary(hash), "Wrong hash for zip file");
     }
 
     @Test
@@ -123,6 +122,7 @@ public class DocumentationResourceTest {
     }
 
     @Test
+    @SuppressWarnings({ "NullAway", "ObjectToString" })
     public void constructorNullResourceDir() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> new DocumentationResource(null, htmlProducer));
@@ -130,6 +130,7 @@ public class DocumentationResourceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullHtmlProducer() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> new DocumentationResource("/markdown", null));

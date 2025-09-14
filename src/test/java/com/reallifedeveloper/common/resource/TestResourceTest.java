@@ -4,6 +4,7 @@ import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,7 +20,10 @@ public class TestResourceTest {
 
     private static final String TEST_URL = "local://testresource";
 
+    @SuppressWarnings("NullAway") // Initialized by init method called by JUnit
     private static TestResource resource;
+
+    @SuppressWarnings("NullAway") // Initialized by init method called by JUnit
     private static Server server;
 
     @BeforeAll
@@ -107,13 +111,13 @@ public class TestResourceTest {
         verifyResponse(response, null, 500);
     }
 
-    private void verifyRequest(RequestInfo request, String path, String method, String postData) {
+    private void verifyRequest(RequestInfo request, String path, String method, @Nullable String postData) {
         Assertions.assertEquals(path, request.path(), "Wrong request path: ");
         Assertions.assertEquals(method, request.method(), "Wrong request method: ");
         Assertions.assertEquals(postData, request.data(), "Wrong post data: ");
     }
 
-    private void verifyResponse(Response response, Object entity, int status) {
+    private void verifyResponse(Response response, @Nullable Object entity, int status) {
         Assertions.assertNotNull(response, "Response should not be null");
         if (entity == null) {
             Assertions.assertNull(response.getEntity(), "Response entity should be null");

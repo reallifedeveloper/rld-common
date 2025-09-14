@@ -2,6 +2,7 @@ package com.reallifedeveloper.common.infrastructure.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -39,9 +40,11 @@ public class JpaRepositoryTest {
     @Test
     public void unknownMethod() {
         RuntimeException thrown = assertThrows(RuntimeException.class, () -> repository.getQueryString("noSuchMethod"));
+        assertNotNull(thrown.getCause(), "Expected root cause to be present in exception: " + thrown);
         assertEquals(NoSuchMethodException.class, thrown.getCause().getClass(), "Wrong root cause");
     }
 
+    @SuppressWarnings("unused")
     private interface TestRepository {
 
         void foo();
@@ -70,7 +73,8 @@ public class JpaRepositoryTest {
         public void baz(String s, int i) {
         }
 
-        public void methodWithoutQueryString() {
+        @SuppressWarnings("unused")
+        void methodWithoutQueryString() {
         }
 
         @Override

@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,14 +132,16 @@ public class BaseResource {
     /**
      * Given a comma-separated list, this methods returns a list containing the constituent strings, with leading and trailing whitespace
      * removed.
-     *
+     * <p>
      * Example: Given the string " foo ,bar , baz " the result is the list ["foo","bar","baz"].
+     * <p>
+     * A {@code null} string gives an empty list, the method does not throw an exception.
      *
-     * @param s a comma-separated list
+     * @param s a comma-separated list, or {@code null}
      *
      * @return a list with the constituent strings, with whitespace removed
      */
-    protected List<String> commaSeparatedStringToList(String s) {
+    protected List<String> commaSeparatedStringToList(@Nullable String s) {
         if (s == null || s.isBlank()) {
             return Collections.emptyList();
         } else {

@@ -29,6 +29,7 @@ public class Markdown4jHtmlProducerTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void produceNull() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> htmlProducer.produce(null));
         assertEquals("resourceName must not be null", e.getMessage());

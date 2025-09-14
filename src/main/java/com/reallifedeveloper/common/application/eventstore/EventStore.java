@@ -94,6 +94,7 @@ public final class EventStore {
      * @throws IllegalArgumentException if {@code storedEvent} is {@code null}
      * @throws IllegalStateException    if loading of the class {@code T} failed
      */
+    @SuppressWarnings("TypeParameterUnusedInFormals") // The name of the actual runtime class is in storedEvent.eventType
     public <T extends DomainEvent> T toDomainEvent(StoredEvent storedEvent) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("toDomainEvent: storedEvent={}", removeCRLF(storedEvent));

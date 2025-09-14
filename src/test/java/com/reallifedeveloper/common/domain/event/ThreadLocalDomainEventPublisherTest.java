@@ -3,12 +3,13 @@ package com.reallifedeveloper.common.domain.event;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.reallifedeveloper.tools.test.TestUtil;
 
 public class ThreadLocalDomainEventPublisherTest {
 
@@ -131,7 +132,7 @@ public class ThreadLocalDomainEventPublisherTest {
         private static final long serialVersionUID = 1L;
 
         BaseDomainEvent() {
-            super(ZonedDateTime.now());
+            super(TestUtil.utcNow());
         }
     }
 

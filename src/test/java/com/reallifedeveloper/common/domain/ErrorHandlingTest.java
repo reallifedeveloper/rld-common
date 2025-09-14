@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
+@SuppressWarnings("NullAway")
 public class ErrorHandlingTest {
 
     @Test
@@ -141,35 +142,33 @@ public class ErrorHandlingTest {
     }
 
     private static void testCheckNull(String messageTemplate, String expectedMessage, Object... args) {
-        Executable checkNullCall;
-        switch (args.length) {
-        case 1:
-            checkNullCall = () -> checkNull(messageTemplate, args[0]);
-            break;
-        case 2:
-            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1]);
-            break;
-        case 3:
-            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2]);
-            break;
-        case 4:
-            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3]);
-            break;
-        case 5:
-            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4]);
-            break;
-        case 6:
-            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5]);
-            break;
-        case 7:
-            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-            break;
-        case 8:
-            checkNullCall = () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
-            break;
-        default:
-            throw new IllegalStateException("Unexepcted number of argumets: " + args.length);
+        Executable checkNullCall = switch (args.length) {
+        case 1 -> {
+            yield () -> checkNull(messageTemplate, args[0]);
         }
+        case 2 -> {
+            yield () -> checkNull(messageTemplate, args[0], args[1]);
+        }
+        case 3 -> {
+            yield () -> checkNull(messageTemplate, args[0], args[1], args[2]);
+        }
+        case 4 -> {
+            yield () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3]);
+        }
+        case 5 -> {
+            yield () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4]);
+        }
+        case 6 -> {
+            yield () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5]);
+        }
+        case 7 -> {
+            yield () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+        }
+        case 8 -> {
+            yield () -> checkNull(messageTemplate, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
+        }
+        default -> throw new IllegalStateException("Unexepcted number of argumets: " + args.length);
+        };
 
         if (expectedMessage == null) {
             assertDoesNotThrow(checkNullCall);

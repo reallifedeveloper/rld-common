@@ -14,7 +14,7 @@ import lombok.experimental.UtilityClass;
  * @author RealLifeDeveloper
  */
 @UtilityClass
-@SuppressWarnings({ "PMD.AvoidDuplicateLiterals" })
+@SuppressWarnings({ "NullAway", "PMD.AvoidDuplicateLiterals" })
 public class ErrorHandling {
 
     /**
@@ -94,14 +94,14 @@ public class ErrorHandling {
      * Fails if any of {@code arg1} through {@code arg5} is {@code null}, throwing an {@code IllegalArgumentException} with a formatted
      * message based on {@code messageTemplate}.
      *
-     * @param messageTemplate a {@code String.format()} format string that will be formatted using {@code arg1} through {@code arg7}.
+     * @param messageTemplate a {@code String.format()} format string that will be formatted using {@code arg1} through {@code arg5}.
      * @param arg1            the first argument to check for nullness
      * @param arg2            the second argument to check for nullness
      * @param arg3            the third argument to check for nullness
      * @param arg4            the fourth argument to check for nullness
      * @param arg5            the fifth argument to check for nullness
      *
-     * @throws IllegalArgumentException if any of {@code arg1} throuch {@code arg5} is {@code null}
+     * @throws IllegalArgumentException if any of {@code arg1} through {@code arg5} is {@code null}
      * @throws IllegalStateException    if {@code messageTemplate} is {@code null}
      */
     @EnsuresNonNull({ "#2", "#3", "#4", "#5", "#6" })
@@ -115,7 +115,7 @@ public class ErrorHandling {
      * Fails if any of {@code arg1} through {@code arg6} is {@code null}, throwing an {@code IllegalArgumentException} with a formatted
      * message based on {@code messageTemplate}.
      *
-     * @param messageTemplate a {@code String.format()} format string that will be formatted using {@code arg1} through {@code arg7}.
+     * @param messageTemplate a {@code String.format()} format string that will be formatted using {@code arg1} through {@code arg6}.
      * @param arg1            the first argument to check for nullness
      * @param arg2            the second argument to check for nullness
      * @param arg3            the third argument to check for nullness
@@ -123,7 +123,7 @@ public class ErrorHandling {
      * @param arg5            the fifth argument to check for nullness
      * @param arg6            the sixth argument to check for nullness
      *
-     * @throws IllegalArgumentException if any of {@code arg1} throuch {@code arg7} is {@code null}
+     * @throws IllegalArgumentException if any of {@code arg1} through {@code arg6} is {@code null}
      * @throws IllegalStateException    if {@code messageTemplate} is {@code null}
      */
     @EnsuresNonNull({ "#2", "#3", "#4", "#5", "#6", "#7" })
@@ -146,7 +146,7 @@ public class ErrorHandling {
      * @param arg6            the sixth argument to check for nullness
      * @param arg7            the seventh argument to check for nullness
      *
-     * @throws IllegalArgumentException if any of {@code arg1} throuch {@code arg7} is {@code null}
+     * @throws IllegalArgumentException if any of {@code arg1} through {@code arg7} is {@code null}
      * @throws IllegalStateException    if {@code messageTemplate} is {@code null}
      */
     @EnsuresNonNull({ "#2", "#3", "#4", "#5", "#6", "#7", "#8" })
@@ -160,7 +160,7 @@ public class ErrorHandling {
      * Fails if any of {@code arg1} through {@code arg8} is {@code null}, throwing an {@code IllegalArgumentException} with a formatted
      * message based on {@code messageTemplate}.
      *
-     * @param messageTemplate a {@code String.format()} format string that will be formatted using {@code arg1} through {@code arg7}.
+     * @param messageTemplate a {@code String.format()} format string that will be formatted using {@code arg1} through {@code arg8}.
      * @param arg1            the first argument to check for nullness
      * @param arg2            the second argument to check for nullness
      * @param arg3            the third argument to check for nullness
@@ -170,7 +170,7 @@ public class ErrorHandling {
      * @param arg7            the seventh argument to check for nullness
      * @param arg8            the eigth argument to check for nullness
      *
-     * @throws IllegalArgumentException if any of {@code arg1} throuch {@code arg7} is {@code null}
+     * @throws IllegalArgumentException if any of {@code arg1} through {@code arg8} is {@code null}
      * @throws IllegalStateException    if {@code messageTemplate} is {@code null}
      */
     @EnsuresNonNull({ "#2", "#3", "#4", "#5", "#6", "#7", "#8", "#9" })
@@ -180,6 +180,7 @@ public class ErrorHandling {
         checkNullInternal(messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
 
+    @SuppressWarnings("AnnotateFormatMethod")
     @SuppressFBWarnings(value = "FORMAT_STRING_MANIPULATION", justification = "The format string is provided by the programmer, not user")
     private static void checkNullInternal(String messageTemplate, @Nullable Object... arguments) {
         // We know that arguments will never be null, it will always be an array, since

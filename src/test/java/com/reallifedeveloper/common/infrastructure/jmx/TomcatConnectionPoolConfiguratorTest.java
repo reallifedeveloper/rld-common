@@ -101,6 +101,7 @@ public class TomcatConnectionPoolConfiguratorTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullDataSource() {
         assertThrows(IllegalArgumentException.class, () -> new TomcatConnectionPoolConfigurator(null),
                 "Expected constructor to throw IllegalArgumentException for null DataSource");

@@ -20,6 +20,7 @@ public class CommonDomainRegistryTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void uninitializedRegistryShouldThrowException() {
         new CommonDomainRegistry().setApplicationContext(null);
         Exception e = assertThrows(IllegalStateException.class, () -> CommonDomainRegistry.domainEventPublisher());

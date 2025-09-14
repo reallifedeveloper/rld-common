@@ -48,7 +48,7 @@ public final class NotificationLogId {
         if (notificationLogId == null) {
             throw new IllegalArgumentException("notificationLogId must not be null");
         }
-        String[] textIds = notificationLogId.split(",");
+        String[] textIds = notificationLogId.split(",", -1);
         if (textIds.length != 2) {
             throw new IllegalArgumentException("notificationLogId should be on the form '<low>,<high>'"
                     + ", where <low> and <high> are integers: notificationLogId=" + notificationLogId);

@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * An implementation of the {@link TimeService} interface useful for testing.
  * <p>
@@ -24,7 +26,7 @@ public class TestTimeService implements TimeService {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
     private int currentDateTimeIndex;
-    private List<ZonedDateTime> dateTimes;
+    private @Nullable List<ZonedDateTime> dateTimes;
 
     /**
      * {@inheritDoc}

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.Test;
 
 import jakarta.ws.rs.WebApplicationException;
@@ -27,6 +28,7 @@ public class ResourceUtilTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void webApplicationExceptionStringNullStatus() {
         assertThrows(IllegalArgumentException.class, () -> {
             ResourceUtil.webApplicationException("foo", null);
@@ -47,6 +49,7 @@ public class ResourceUtilTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void webApplicationExceptionThrowableNullStatus() {
         assertThrows(IllegalArgumentException.class, () -> {
             ResourceUtil.webApplicationException(new IllegalArgumentException(), null);
@@ -104,7 +107,7 @@ public class ResourceUtilTest {
         assertTrue(cacheControl.isMustRevalidate(), "Must-revalidate should be true");
     }
 
-    private void verifyException(WebApplicationException e, String entity, Status status) {
+    private void verifyException(WebApplicationException e, @Nullable String entity, Status status) {
         assertNotNull(e, "Exception should not be null");
         assertEquals(entity, e.getResponse().getEntity(), "Wrong entity: ");
         assertEquals(status.getStatusCode(), e.getResponse().getStatus(), "Wrong status: ");

@@ -14,10 +14,11 @@ import org.junit.jupiter.api.Test;
 import com.reallifedeveloper.common.domain.ClockTimeService;
 import com.reallifedeveloper.common.domain.registry.CommonDomainRegistry;
 import com.reallifedeveloper.common.domain.registry.CommonDomainRegistryTest;
+import com.reallifedeveloper.tools.test.TestUtil;
 
 public class TimestampedJpaEntityTest {
 
-    private final ZonedDateTime testDateTime = ZonedDateTime.now();
+    private final ZonedDateTime testDateTime = TestUtil.utcNow();
 
     @BeforeAll
     public static void initClass() {
@@ -33,7 +34,7 @@ public class TimestampedJpaEntityTest {
     @Test
     public void constructor() {
         TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity();
-        assertFalse(entity.id().isPresent(), "ID should be not be present");
+        assertFalse(entity.id().isPresent(), "ID should not be present");
         assertFalse(entity.created().isPresent(), "Created timestamp should not be present");
         assertFalse(entity.updated().isPresent(), "Updated timestamp should not be present");
     }
@@ -50,7 +51,7 @@ public class TimestampedJpaEntityTest {
     @Test
     public void constructorIdCreatedUpdated() {
         long id = 42;
-        ZonedDateTime created = ZonedDateTime.now();
+        ZonedDateTime created = TestUtil.utcNow();
         ZonedDateTime updated = created.plusSeconds(1);
         TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity(id, created, updated);
         assertEquals(id, entity.id().get().longValue(), "Wrong ID");
@@ -59,20 +60,22 @@ public class TimestampedJpaEntityTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorCreatedNull() {
-        assertThrows(IllegalArgumentException.class, () -> new TestTimestampedJpaEntity(42L, null, ZonedDateTime.now()),
+        assertThrows(IllegalArgumentException.class, () -> new TestTimestampedJpaEntity(42L, null, TestUtil.utcNow()),
                 "Expected IllegalArgumentException for null created date");
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorUpdatedNull() {
-        assertThrows(IllegalArgumentException.class, () -> new TestTimestampedJpaEntity(42L, ZonedDateTime.now(), null),
+        assertThrows(IllegalArgumentException.class, () -> new TestTimestampedJpaEntity(42L, TestUtil.utcNow(), null),
                 "Expected IllegalArgumentException for null updated date");
     }
 
     @Test
     public void setUpdated() {
-        ZonedDateTime updated = ZonedDateTime.now();
+        ZonedDateTime updated = TestUtil.utcNow();
         TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity();
         assertFalse(entity.updated().isPresent(), "Updated timestamp should not be present");
         entity.setUpdated(updated);
@@ -80,6 +83,7 @@ public class TimestampedJpaEntityTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void setUpdatedNull() {
         TestTimestampedJpaEntity entity = new TestTimestampedJpaEntity();
         assertThrows(IllegalArgumentException.class, () -> entity.setUpdated(null),

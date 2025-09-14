@@ -37,15 +37,17 @@ public class BaseJpaRepository {
         }
     }
 
-    @SuppressWarnings("PMD.EmptyCatchBlock")
+    @SuppressWarnings({ "PMD.EmptyCatchBlock", "PMD.AvoidAccessibilityAlteration" })
     private Optional<Query> findQueryAnnotation(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
-        Method method = getClass().getMethod(methodName, parameterTypes);
+        Method method = getClass().getDeclaredMethod(methodName, parameterTypes);
+        method.setAccessible(true);
         Query query = method.getAnnotation(Query.class);
         if (query == null) {
             for (Class<?> c : getClass().getInterfaces()) {
                 try {
-                    method = c.getMethod(methodName, parameterTypes);
-                    query = method.getAnnotation(Query.class);
+                    method = c.getDeclaredMethod(methodName, parameterTypes);
+                    method.setAccessible(true);
+                    query = method.getDeclaredAnnotation(Query.class);
                     if (query != null) {
                         break;
                     }

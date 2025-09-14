@@ -130,6 +130,7 @@ public class NotificationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullEventStore() {
         Assertions.assertThrows(IllegalArgumentException.class,
             () -> new NotificationService(null, messageTrackerRepository, notificationPublisher),
@@ -137,6 +138,7 @@ public class NotificationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullMessageTrackerRepository() {
         Assertions.assertThrows(IllegalArgumentException.class,
             () -> new NotificationService(eventStore, null, notificationPublisher),
@@ -144,6 +146,7 @@ public class NotificationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullNotificationPublisher() {
         Assertions.assertThrows(IllegalArgumentException.class,
             () -> new NotificationService(eventStore, messageTrackerRepository, null),

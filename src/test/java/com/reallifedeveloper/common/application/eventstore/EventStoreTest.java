@@ -3,7 +3,6 @@ package com.reallifedeveloper.common.application.eventstore;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -18,9 +17,11 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.reallifedeveloper.common.domain.ObjectSerializer;
 import com.reallifedeveloper.common.domain.event.TestEvent;
 import com.reallifedeveloper.common.infrastructure.GsonObjectSerializer;
-import com.reallifedeveloper.common.test.TestUtil;
+import com.reallifedeveloper.common.test.CommonTestUtil;
 import com.reallifedeveloper.tools.test.LogbackTestUtil;
+import com.reallifedeveloper.tools.test.TestUtil;
 
+@SuppressWarnings("NullAway")
 public class EventStoreTest {
 
     private final ObjectSerializer<String> eventSerializer = new GsonObjectSerializer();
@@ -29,7 +30,7 @@ public class EventStoreTest {
 
     @Test
     public void addOneEvent() throws Exception {
-        TestEvent event = new TestEvent(42, "foo", ZonedDateTime.now(), 2);
+        TestEvent event = new TestEvent(42, "foo", TestUtil.utcNow(), 2);
         StoredEvent storedEvent = eventStore.add(event);
         assertEquals(1, storedEvent.id().longValue(), "Stored event has wrong ID");
         assertEquals(TestEvent.class.getName(), storedEvent.eventType(), "Stored event has wrong type");
@@ -39,7 +40,7 @@ public class EventStoreTest {
         TestEvent retrievedEvent = eventSerializer.deserialize(storedEvent.eventBody(), TestEvent.class);
         assertEquals(event.id(), retrievedEvent.id(), "Retrieved event has wrong ID");
         assertEquals(event.name(), retrievedEvent.name(), "Retrieved event has wrong name");
-        TestUtil.assertEquals(event.eventOccurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
+        CommonTestUtil.assertEquals(event.eventOccurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
         assertEquals(event.eventVersion(), retrievedEvent.eventVersion(), "Retrieved event version is wrong");
     }
 
@@ -58,7 +59,7 @@ public class EventStoreTest {
 
     @Test
     public void allEventsSince() {
-        ZonedDateTime start = ZonedDateTime.now();
+        ZonedDateTime start = TestUtil.utcNow();
         final int numEventsTotal = 10;
         int eventVersion = 3;
         for (int i = 0; i < numEventsTotal; i++) {
@@ -82,14 +83,14 @@ public class EventStoreTest {
             TestEvent retrievedEvent = eventStore.toDomainEvent(storedEvent);
             assertEquals(expectedStoredEventId - 1, retrievedEvent.id(), "Retrieved event has wrong ID");
             assertEquals("foo" + (expectedStoredEventId - 1), retrievedEvent.name(), "Retrieved event has wrong name");
-            TestUtil.assertEquals(storedEvent.occurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
+            CommonTestUtil.assertEquals(storedEvent.occurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
             assertEquals(storedEvent.version().intValue(), retrievedEvent.eventVersion(), "Retrieved event version is wrong");
         }
     }
 
     @Test
     public void allEventsBetween() {
-        ZonedDateTime start = ZonedDateTime.now();
+        ZonedDateTime start = TestUtil.utcNow();
         final int numEventsTotal = 10;
         int eventVersion = 3;
         for (int i = 0; i < numEventsTotal; i++) {
@@ -113,20 +114,20 @@ public class EventStoreTest {
             TestEvent retrievedEvent = eventStore.toDomainEvent(storedEvent);
             assertEquals(expectedStoredEventId - 1, retrievedEvent.id(), "Retrieved event has wrong ID");
             assertEquals("foo" + (expectedStoredEventId - 1), retrievedEvent.name(), "Retrieved event has wrong name");
-            TestUtil.assertEquals(storedEvent.occurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
+            CommonTestUtil.assertEquals(storedEvent.occurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
             assertEquals(storedEvent.version().intValue(), retrievedEvent.eventVersion(), "Retrieved event version is wrong");
         }
     }
 
     @Test
     public void toDomainEvent() throws Exception {
-        TestEvent event = new TestEvent(42, "foo", ZonedDateTime.now(), 2);
+        TestEvent event = new TestEvent(42, "foo", TestUtil.utcNow(), 2);
         StoredEvent storedEvent = eventStore.add(event);
         TestEvent retrievedEvent = eventStore.toDomainEvent(storedEvent);
 
         assertEquals(event.id(), retrievedEvent.id(), "Retrieved event has wrong ID");
         assertEquals(event.name(), retrievedEvent.name(), "Retrieved event has wrong name");
-        TestUtil.assertEquals(event.eventOccurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
+        CommonTestUtil.assertEquals(event.eventOccurredOn(), retrievedEvent.eventOccurredOn(), "Retrieved event timestamp is wrong");
         assertEquals(event.eventVersion(), retrievedEvent.eventVersion(), "Retrieved event has wrong version");
     }
 
@@ -138,7 +139,7 @@ public class EventStoreTest {
 
     @Test
     public void toDomainEventUnknownClass() {
-        StoredEvent storedEvent = new StoredEvent("foo", "bar", ZonedDateTime.now(), 1);
+        StoredEvent storedEvent = new StoredEvent("foo", "bar", TestUtil.utcNow(), 1);
         Exception e = assertThrows(IllegalStateException.class, () -> eventStore.toDomainEvent(storedEvent));
         assertEquals("Failed to load class foo", e.getMessage());
     }
@@ -161,7 +162,7 @@ public class EventStoreTest {
         Logger logger = (Logger) LoggerFactory.getLogger(EventStore.class);
         Level originalLevel = logger.getLevel();
         logger.setLevel(Level.TRACE);
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime now = TestUtil.utcNow();
 
         EventStore myEventStore = new EventStore(eventSerializer, eventRepository);
         assertSingleLogEntry(Level.INFO, "Creating new EventStore: serializer=" + eventSerializer + ", repository=" + eventRepository);

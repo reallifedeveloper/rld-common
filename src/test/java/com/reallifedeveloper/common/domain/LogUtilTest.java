@@ -38,6 +38,7 @@ public class LogUtilTest {
     }
 
     private static final class FooBar {
+        @Override
         public String toString() {
             return "f\no\ro\r\nb\n\ra\r\n\r\nr";
         }

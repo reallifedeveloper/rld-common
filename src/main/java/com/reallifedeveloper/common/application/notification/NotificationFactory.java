@@ -40,6 +40,10 @@ public final class NotificationFactory {
      * @return a new {@code Notification} for the stored event
      */
     public Notification fromStoredEvent(StoredEvent storedEvent) {
+        ErrorHandling.checkNull("storedEvent must not be null", storedEvent);
+        if (storedEvent.id() == null) {
+            throw new IllegalArgumentException("storedEvent has null ID -- has it not yet been saved? storedEvent=" + storedEvent);
+        }
         DomainEvent domainEvent = eventStore.toDomainEvent(storedEvent);
         return Notification.create(domainEvent, storedEvent.id());
     }

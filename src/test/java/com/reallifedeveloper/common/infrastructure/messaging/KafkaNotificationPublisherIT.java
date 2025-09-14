@@ -120,7 +120,7 @@ public class KafkaNotificationPublisherIT {
      */
     private static final class KafkaTestConfiguration {
 
-        public ProducerFactory<String, String> producerFactory() {
+        ProducerFactory<String, String> producerFactory() {
             return new DefaultKafkaProducerFactory<>(producerConfig());
         }
 
@@ -131,7 +131,7 @@ public class KafkaNotificationPublisherIT {
             return props;
         }
 
-        public ConsumerFactory<String, String> consumerFactory() {
+        ConsumerFactory<String, String> consumerFactory() {
             return new DefaultKafkaConsumerFactory<>(consumerConfig());
         }
 
@@ -197,7 +197,7 @@ public class KafkaNotificationPublisherIT {
                 int numPolls = 0;
                 while (running) {
                     LOG.debug("Polling kafkaConsumer...");
-                    ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.ofMillis(1000));
+                    ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
                     numPolls++;
                     if (numPolls >= 3) {
                         // It seems to take three polls until the consumer is ready.
@@ -217,11 +217,11 @@ public class KafkaNotificationPublisherIT {
             }
         }
 
-        public void requestStop() {
+        void requestStop() {
             this.running = false;
         }
 
-        public boolean isReady() {
+        boolean isReady() {
             return ready;
         }
     }

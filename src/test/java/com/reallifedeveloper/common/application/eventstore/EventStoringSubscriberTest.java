@@ -1,7 +1,6 @@
 package com.reallifedeveloper.common.application.eventstore;
 
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -12,6 +11,7 @@ import com.reallifedeveloper.common.domain.ObjectSerializer;
 import com.reallifedeveloper.common.domain.event.DomainEvent;
 import com.reallifedeveloper.common.domain.event.TestEvent;
 import com.reallifedeveloper.common.infrastructure.GsonObjectSerializer;
+import com.reallifedeveloper.tools.test.TestUtil;
 
 public class EventStoringSubscriberTest {
 
@@ -25,7 +25,7 @@ public class EventStoringSubscriberTest {
         TestEvent event = new TestEvent(
                 42,
                 "foo",
-                ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS).withZoneSameInstant(ZoneId.of("+01:00")),
+                TestUtil.utcNow().truncatedTo(ChronoUnit.MILLIS).withZoneSameInstant(ZoneId.of("+01:00")),
                 1
         );
         subscriber.handleEvent(event);

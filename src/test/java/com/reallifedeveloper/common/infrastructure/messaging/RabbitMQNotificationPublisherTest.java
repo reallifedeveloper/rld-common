@@ -114,12 +114,14 @@ public class RabbitMQNotificationPublisherTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void creatingPublisherWithNullConnectionFactoryShouldFail() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> new RabbitMQNotificationPublisher(null, objectSerializer));
         assertEquals("Arguments must not be null: connectionFactory=null, objectSerializer=" + objectSerializer, e.getMessage());
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void creatingPublisherWithNullObjectSerializerShouldFail() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> new RabbitMQNotificationPublisher(connectionFactory, null));
         assertEquals("Arguments must not be null: connectionFactory=" + connectionFactory + ", objectSerializer=null", e.getMessage());

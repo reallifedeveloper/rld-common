@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -149,7 +150,7 @@ public class RabbitMQNotificationPublisherIT {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
                         throws IOException {
-                    String message = new String(body, "UTF-8");
+                    String message = new String(body, StandardCharsets.UTF_8);
                     LOG.debug(name + ": Message received: " + message);
                     messages.add(message);
                 }
@@ -157,7 +158,7 @@ public class RabbitMQNotificationPublisherIT {
             channel.basicConsume(queueName, true, consumer);
         }
 
-        public synchronized List<String> messages() {
+        synchronized List<String> messages() {
             return Collections.unmodifiableList(messages);
         }
     }

@@ -67,18 +67,21 @@ public class NotificationFactoryTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void fromStoreventWithNullEventShouldThrowException() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> factory.fromStoredEvent(null));
         assertEquals("storedEvent must not be null", e.getMessage());
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void fromStoredEventsWillNullListShouldThrowException() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> factory.fromStoredEvents(null));
         assertEquals("storedEvents must not be null", e.getMessage());
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void instanceWithNullEventStoreShouldThrowException() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> NotificationFactory.instance(null));
         assertEquals("eventStore must not be null", e.getMessage());

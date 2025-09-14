@@ -23,12 +23,14 @@ public class ResourceTest {
     private TestResource resource = new TestResource();
 
     @Test
+    @SuppressWarnings("NullAway")
     public void handleErrorMethodNameNull() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> resource.handleError(null, new NullPointerException()));
         assertEquals("Arguments must not be null: methodName=null, originalException=java.lang.NullPointerException", e.getMessage());
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void handleErrorOriginalExceptionNull() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> resource.handleError("foo", null));
         assertEquals("Arguments must not be null: methodName=foo, originalException=null", e.getMessage());
@@ -61,6 +63,7 @@ public class ResourceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void parseNullDate() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> resource.parseDate(null));
         assertEquals("date must not be null", e.getMessage());
@@ -80,6 +83,7 @@ public class ResourceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void parseNullUrl() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> resource.parseUrl(null));
         assertEquals("url must not be null", e.getMessage());

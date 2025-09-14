@@ -3,15 +3,17 @@ package com.reallifedeveloper.common.domain.event;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.reallifedeveloper.tools.test.TestUtil;
+
 public class SimpleDomainEventPublisherTest {
 
     @Test
+    @SuppressWarnings("NullAway")
     public void createPublisherWithNullSubscribers() {
         assertThrows(IllegalArgumentException.class, () -> new SimpleDomainEventPublisher(null));
     }
@@ -62,12 +64,14 @@ public class SimpleDomainEventPublisherTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void publishNullEvent() {
         SimpleDomainEventPublisher publisher = new SimpleDomainEventPublisher();
         assertThrows(IllegalArgumentException.class, () -> publisher.publish(null));
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void subscribeNullSubscriber() {
         SimpleDomainEventPublisher publisher = new SimpleDomainEventPublisher();
         assertThrows(IllegalArgumentException.class, () -> publisher.subscribe(null));
@@ -77,7 +81,7 @@ public class SimpleDomainEventPublisherTest {
         private static final long serialVersionUID = 1L;
 
         BaseDomainEvent() {
-            super(ZonedDateTime.now());
+            super(TestUtil.utcNow());
         }
     }
 

@@ -6,12 +6,14 @@ import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.reallifedeveloper.tools.test.TestUtil;
+
 public class ClockTimeServiceTest {
 
     @Test
     public void now() {
         ClockTimeService timeService = new ClockTimeService();
-        ZonedDateTime before = ZonedDateTime.now();
+        ZonedDateTime before = TestUtil.utcNow();
         ZonedDateTime now = timeService.now();
         long diffMillis = now.toInstant().toEpochMilli() - before.toInstant().toEpochMilli();
         Assertions.assertTrue(diffMillis <= 1, "Difference in times between now and before is too large: " + diffMillis);

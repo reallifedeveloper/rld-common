@@ -32,6 +32,7 @@ public class NotificationRepresentationTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorEventWithNullOccurredOn() {
         NullableTestEvent event = new NullableTestEvent(null, 1);
         Notification notification = Notification.create(event, 42L);
@@ -41,6 +42,7 @@ public class NotificationRepresentationTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullNotification() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> new NotificationRepresentation(null, objectSerializer));
@@ -49,6 +51,7 @@ public class NotificationRepresentationTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullSerializer() {
         TestEvent event = new TestEvent(1, "foo");
         long storedEventId = 42;

@@ -44,9 +44,6 @@ public final class DocumentationResource extends BaseResource {
     private final HtmlProducer htmlProducer;
 
     @Context
-    private @Nullable HttpHeaders httpHeaders;
-
-    @Context
     private @Nullable UriInfo uriInfo;
 
     /**

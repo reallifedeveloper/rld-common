@@ -19,8 +19,10 @@ import com.google.gson.JsonParser;
 import com.reallifedeveloper.common.application.notification.Notification;
 import com.reallifedeveloper.common.domain.event.AbstractDomainEvent;
 import com.reallifedeveloper.common.domain.event.TestEvent;
-import com.reallifedeveloper.common.test.TestUtil;
+import com.reallifedeveloper.common.test.CommonTestUtil;
+import com.reallifedeveloper.tools.test.TestUtil;
 
+@SuppressWarnings("NullAway")
 public class GsonObjectSerializerTest {
 
     private static final String SERIALIZED_NOTIFICATION_WITHOUT_EVENT = """
@@ -82,7 +84,7 @@ public class GsonObjectSerializerTest {
 
     @Test
     public void serializeAndDeserializeLocalDate() {
-        TestEvent3 event = new TestEvent3(LocalDate.now(), LocalDateTime.now());
+        TestEvent3 event = new TestEvent3(today(), now());
         String serializedEvent = serializer.serialize(event);
         JsonObject jsonObject = JsonParser.parseString(serializedEvent).getAsJsonObject();
         String localDate = jsonObject.get("localDate").getAsString();
@@ -93,7 +95,7 @@ public class GsonObjectSerializerTest {
 
     @Test
     public void serializeAndDeserializeNullLocalDate() {
-        TestEvent3 event = new TestEvent3(null, LocalDateTime.now());
+        TestEvent3 event = new TestEvent3(null, now());
         String serializedEvent = serializer.serialize(event);
         JsonObject jsonObject = JsonParser.parseString(serializedEvent).getAsJsonObject();
         Assertions.assertNull(jsonObject.get("localDate"), "LocalDate should be null in serialized form");
@@ -103,18 +105,19 @@ public class GsonObjectSerializerTest {
 
     @Test
     public void serializeAndDeserializeLocalDateTime() {
-        TestEvent3 event = new TestEvent3(LocalDate.now(), LocalDateTime.now());
+        TestEvent3 event = new TestEvent3(today(), now());
         String serializedEvent = serializer.serialize(event);
         JsonObject jsonObject = JsonParser.parseString(serializedEvent).getAsJsonObject();
         String localDateTime = jsonObject.get("localDateTime").getAsString();
-        Assertions.assertEquals(TestUtil.format(event.localDateTime), localDateTime, "Unexpected LocalDateTime in serialized form");
+        Assertions.assertEquals(CommonTestUtil.format(event.localDateTime), localDateTime, "Unexpected LocalDateTime in serialized form");
         TestEvent3 deserializedEvent = serializer.deserialize(serializedEvent, TestEvent3.class);
-        TestUtil.assertEquals(event.localDateTime, deserializedEvent.localDateTime, "Unexpected LocalDateTime in deserialized object");
+        CommonTestUtil.assertEquals(event.localDateTime, deserializedEvent.localDateTime,
+                "Unexpected LocalDateTime in deserialized object");
     }
 
     @Test
     public void serializeAndDeserializeNullLocalDateTime() {
-        TestEvent3 event = new TestEvent3(LocalDate.now(), null);
+        TestEvent3 event = new TestEvent3(today(), null);
         String serializedEvent = serializer.serialize(event);
         JsonObject jsonObject = JsonParser.parseString(serializedEvent).getAsJsonObject();
         Assertions.assertNull(jsonObject.get("localDateTime"), "LocalDateTime should be null in serialized form");
@@ -147,16 +150,24 @@ public class GsonObjectSerializerTest {
         Assertions.assertNull(serializer.deserialize("null", TestEvent.class), "Deserializing 'null' should give null");
     }
 
+    private static LocalDate today() {
+        return LocalDate.now(ZoneOffset.UTC);
+    }
+
+    private static LocalDateTime now() {
+        return LocalDateTime.now(ZoneOffset.UTC);
+    }
+
     private static final class TestEvent2 extends AbstractDomainEvent {
         private static final long serialVersionUID = 1L;
 
         private final int id = 42;
 
         private TestEvent2() {
-            super(ZonedDateTime.now());
+            super(TestUtil.utcNow());
         }
 
-        public int id() {
+        int id() {
             return id;
         }
 
@@ -169,11 +180,11 @@ public class GsonObjectSerializerTest {
     private static final class TestEvent3 extends AbstractDomainEvent {
         private static final long serialVersionUID = 1L;
 
-        private LocalDate localDate = LocalDate.now();
-        private LocalDateTime localDateTime = LocalDateTime.now();
+        private LocalDate localDate = today();
+        private LocalDateTime localDateTime = now();
 
         private TestEvent3(LocalDate localDate, LocalDateTime localDateTime) {
-            super(ZonedDateTime.now());
+            super(TestUtil.utcNow());
             this.localDate = localDate;
             this.localDateTime = localDateTime;
         }

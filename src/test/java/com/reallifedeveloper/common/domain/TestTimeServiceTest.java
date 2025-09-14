@@ -47,6 +47,7 @@ public class TestTimeServiceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void setNullDates() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> timeService.setDateTimes((ZonedDateTime[]) null));
     }
@@ -63,6 +64,7 @@ public class TestTimeServiceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void setNullDateStrings() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> timeService.setDateTimes((String[]) null));
     }

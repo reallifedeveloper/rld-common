@@ -35,6 +35,7 @@ public class NotificationLogIdTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorStringNull() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> new NotificationLogId(null));
         assertEquals("notificationLogId must not be null", e.getMessage());

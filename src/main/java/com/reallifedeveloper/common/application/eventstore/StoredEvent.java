@@ -60,10 +60,12 @@ public class StoredEvent {
         this.version = version;
     }
 
+    /* package-private */
     /**
      * Required by Hibernate.
      */
-    /* package-private */ StoredEvent() {
+    @SuppressWarnings("NullAway")
+    StoredEvent() {
         // Intentionally empty
     }
 

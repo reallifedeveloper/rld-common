@@ -46,6 +46,7 @@ public final class KafkaNotificationPublisher implements NotificationPublisher {
     }
 
     @Override
+    @SuppressWarnings("FutureReturnValueIgnored") // TODO: Remove this
     @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Key can be null, but that is OK")
     public void publish(List<Notification> notifications, String publicationChannel) throws IOException {
         ErrorHandling.checkNull("Arguments must not be null: notifications={}, publicationChannel={}", notifications, publicationChannel);

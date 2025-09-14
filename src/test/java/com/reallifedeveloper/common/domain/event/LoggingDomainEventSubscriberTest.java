@@ -3,12 +3,11 @@ package com.reallifedeveloper.common.domain.event;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.reallifedeveloper.tools.test.LogbackTestUtil;
+import com.reallifedeveloper.tools.test.TestUtil;
 
 public class LoggingDomainEventSubscriberTest {
 
@@ -20,7 +19,7 @@ public class LoggingDomainEventSubscriberTest {
     @Test
     public void handleEvent() {
         LoggingDomainEventSubscriber subscriber = new LoggingDomainEventSubscriber();
-        TestEvent event = new TestEvent(42, "foo", ZonedDateTime.now(), 1);
+        TestEvent event = new TestEvent(42, "foo", TestUtil.utcNow(), 1);
         assertTrue(LogbackTestUtil.getLoggingEvents().isEmpty(), "There should be no logging events");
         subscriber.handleEvent(event);
         assertEquals(1, LogbackTestUtil.getLoggingEvents().size(), "Wrong number of logging events: ");

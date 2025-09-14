@@ -8,13 +8,16 @@ import java.time.ZonedDateTime;
 
 import org.junit.jupiter.api.Test;
 
+import com.reallifedeveloper.tools.test.TestUtil;
+
+@SuppressWarnings("NullAway")
 public class StoredEventTest {
 
     @Test
     public void constructor() {
         String eventType = "foo";
         String eventBody = "bar";
-        ZonedDateTime eventOccurredOn = ZonedDateTime.now();
+        ZonedDateTime eventOccurredOn = TestUtil.utcNow();
         int eventVersion = 1;
         StoredEvent storedEvent = new StoredEvent(eventType, eventBody, eventOccurredOn, eventVersion);
 
@@ -27,13 +30,13 @@ public class StoredEventTest {
 
     @Test
     public void constructorNullEventType() {
-        assertThrows(IllegalArgumentException.class, () -> new StoredEvent(null, "bar", ZonedDateTime.now(), 1),
+        assertThrows(IllegalArgumentException.class, () -> new StoredEvent(null, "bar", TestUtil.utcNow(), 1),
                 "Expected constructor to throw IllegalArgumentException on null eventType");
     }
 
     @Test
     public void constructorNullEventBody() {
-        assertThrows(IllegalArgumentException.class, () -> new StoredEvent("foo", null, ZonedDateTime.now(), 1),
+        assertThrows(IllegalArgumentException.class, () -> new StoredEvent("foo", null, TestUtil.utcNow(), 1),
                 "Expected constructor to throw IllegalArgumentException on null eventBody");
     }
 
@@ -45,7 +48,7 @@ public class StoredEventTest {
 
     @Test
     public void testToString() {
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = TestUtil.utcNow();
         StoredEvent storedEvent = new StoredEvent("foo", "bar", now, 42);
         assertEquals("StoredEvent{id=null, eventType=foo, eventBody=bar, occurredOn=" + now + ", version=42}", storedEvent.toString());
     }

@@ -57,12 +57,14 @@ public class KafkaNotificationPublisherTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void creatingPublisherWithNullKafkaTemplateShouldFail() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> new KafkaNotificationPublisher(null, objectSerializer));
         assertEquals("Arguments must not be null: kafkaTemplate=null, objectSerializer=%s".formatted(objectSerializer), e.getMessage());
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void creatingPublisherWithNullObjectSerializerShouldFail() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> new KafkaNotificationPublisher(kafkaTemplate, null));
         assertEquals("Arguments must not be null: kafkaTemplate=%s, objectSerializer=null".formatted(kafkaTemplate), e.getMessage());

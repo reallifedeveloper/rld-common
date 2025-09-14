@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.reallifedeveloper</groupId>
         <artifactId>rld-parent</artifactId>
-        <version>20</version>
+        <version>22</version>
     </parent>
 
     <artifactId>rld-common</artifactId>
@@ -94,6 +94,13 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- This is referenced in package-info.java in log4j-core -->
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
+            <version>1.1.2</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Test dependencies -->

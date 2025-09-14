@@ -13,10 +13,11 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import com.reallifedeveloper.common.domain.ClockTimeService;
 import com.reallifedeveloper.common.domain.registry.CommonDomainRegistry;
 import com.reallifedeveloper.common.domain.registry.CommonDomainRegistryTest;
+import com.reallifedeveloper.tools.test.TestUtil;
 
 public class DomainEventTest {
 
-    private ZonedDateTime testDateTime = ZonedDateTime.now();
+    private ZonedDateTime testDateTime = TestUtil.utcNow();
 
     @BeforeAll
     public static void initClass() {
@@ -46,20 +47,21 @@ public class DomainEventTest {
 
     @Test
     public void constructorDateTime() {
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = TestUtil.utcNow();
         TestEvent event = new TestEvent(now);
         Assertions.assertEquals(now, event.eventOccurredOn(), "Wrong occurred on: ");
         Assertions.assertEquals(1, event.eventVersion(), "Wrong version: ");
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullDate() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new TestEvent((ZonedDateTime) null));
     }
 
     @Test
     public void constructorDateTimeVersion() {
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = TestUtil.utcNow();
         int version = 42;
         TestEvent event = new TestEvent(now, version);
         Assertions.assertEquals(now, event.eventOccurredOn(), "Wrong occurred on: ");
@@ -67,6 +69,7 @@ public class DomainEventTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullDateVersion() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new TestEvent(null, 1));
     }

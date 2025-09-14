@@ -36,10 +36,12 @@ public class PublishedMessageTracker extends BaseJpaEntity<Long> {
         this.publicationChannel = publicationChannel;
     }
 
+    /* package-private */
     /**
      * Required by JPA.
      */
-    /* package-private */ PublishedMessageTracker() {
+    @SuppressWarnings("NullAway")
+    PublishedMessageTracker() {
         super();
     }
 

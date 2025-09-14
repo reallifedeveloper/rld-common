@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
@@ -17,8 +19,8 @@ import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.Response;
 
 /**
- * A JAX-RS resource that can be used for testing REST clients. This resource accepts all requests,
- * and you can specify the responses given using the {@link #reset(Response...)} method.
+ * A JAX-RS resource that can be used for testing REST clients. This resource accepts all requests, and you can specify the responses given
+ * using the {@link #reset(Response...)} method.
  * <p>
  * See {@link TestResourceTest} for an example of how to use this class.
  *
@@ -28,10 +30,11 @@ import jakarta.ws.rs.core.Response;
 public class TestResource extends BaseResource {
 
     private List<RequestInfo> requests = new ArrayList<>();
-    private List<Response> responses;
+    private List<Response> responses = new ArrayList<>();
     private int responseNum = 0;
 
     @Context
+    @SuppressWarnings("NullAway") // This field is set by JAX-RS.
     private Request request;
 
     @GET
@@ -70,7 +73,7 @@ public class TestResource extends BaseResource {
         return handleRequest(path, null);
     }
 
-    private Response handleRequest(String path, String data) {
+    private Response handleRequest(String path, @Nullable String data) {
         logger().info("path={}, method={}", path, request.getMethod());
         requests.add(new RequestInfo(path, request.getMethod(), data));
         return responses.get(responseNum++);
@@ -88,8 +91,7 @@ public class TestResource extends BaseResource {
     }
 
     /**
-     * Gives a list of {@link RequestInfo} objects representing the requests that have reached
-     * this resource.
+     * Gives a list of {@link RequestInfo} objects representing the requests that have reached this resource.
      *
      * @return a list of {@code RequestInfo} objects
      */
@@ -103,17 +105,16 @@ public class TestResource extends BaseResource {
     public static class RequestInfo {
         private String path;
         private String method;
-        private String data;
+        private @Nullable String data;
 
         /**
          * Creates a new {@code RequestInfo} object using the given path and method.
          *
-         * @param path the path of the request, not including the base URI
+         * @param path   the path of the request, not including the base URI
          * @param method the HTTP method of the request, e.g., "GET", "POST", "PUT" and so on
-         * @param data the data that was sent in the body of this request if it is a POST or PUT request,
-         * otherwise {@code null}
+         * @param data   the data that was sent in the body of this request if it is a POST or PUT request, otherwise {@code null}
          */
-        public RequestInfo(String path, String method, String data) {
+        public RequestInfo(String path, String method, @Nullable String data) {
             this.path = path;
             this.method = method;
             this.data = data;
@@ -138,12 +139,11 @@ public class TestResource extends BaseResource {
         }
 
         /**
-         * Gives the data that was sent in the body of this request if it is a POST or PUT request,
-         * otherwise {@code null}.
+         * Gives the data that was sent in the body of this request if it is a POST or PUT request, otherwise {@code null}.
          *
          * @return the data that was sent in the body of this request, or {@code null}
          */
-        public String data() {
+        public @Nullable String data() {
             return data;
         }
     }

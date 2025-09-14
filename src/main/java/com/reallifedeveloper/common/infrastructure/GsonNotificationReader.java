@@ -22,7 +22,9 @@ import com.reallifedeveloper.common.domain.ErrorHandling;
  *
  * @author RealLifeDeveloper
  */
-@SuppressWarnings("PMD.UnnecessaryCast") // We use casts to @NonNull that PMD considers unnecessary.
+@SuppressWarnings({ "PMD.UnnecessaryCast", // We use casts to @NonNull that PMD considers unnecessary.
+        "PMD.AvoidDuplicateLiterals" // We @SuppressWarnings("NullAway") in several places.
+})
 public final class GsonNotificationReader implements NotificationReader {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(GsonObjectSerializer.DATE_TIME_FORMAT);
@@ -55,21 +57,25 @@ public final class GsonNotificationReader implements NotificationReader {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // required=true => nonnull result
     public String eventType() {
-        return (@NonNull String) JsonUtil.stringValue(notification, "eventType", true);
+        return JsonUtil.stringValue(notification, "eventType", true);
     }
 
     @Override
+    @SuppressWarnings("NullAway") // required=true => nonnull result
     public Long storedEventId() {
         return (@NonNull Long) JsonUtil.longValue(notification, "storedEventId", true);
     }
 
     @Override
+    @SuppressWarnings("NullAway") // required=true => nonnull result
     public ZonedDateTime occurredOn() {
         return (@NonNull ZonedDateTime) JsonUtil.zonedDateTimeValue(notification, "occurredOn", true);
     }
 
     @Override
+    @SuppressWarnings("NullAway") // required=true => nonnull result
     public Integer eventVersion() {
         return (@NonNull Integer) JsonUtil.intValue(event, "eventVersion", true);
     }
@@ -145,7 +151,7 @@ public final class GsonNotificationReader implements NotificationReader {
          */
         private static JsonElement fieldValue(JsonObject rootObject, String fieldName, boolean required) {
             JsonObject object = rootObject;
-            String[] fieldNames = fieldName.split("\\.");
+            String[] fieldNames = fieldName.split("\\.", -1);
             for (int i = 0; i < fieldNames.length - 1; i++) {
                 JsonElement element = object.get(fieldNames[i]);
                 if (element == null) {

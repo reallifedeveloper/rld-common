@@ -27,6 +27,7 @@ public class NotificationLogTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullCurrentNotificationLogId() {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> new NotificationLog(null, nextNotificationLogId, previousNotificationLogId, notifications, true));
@@ -45,6 +46,7 @@ public class NotificationLogTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullNotifications() {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> new NotificationLog(currentNotificationLogId, nextNotificationLogId, previousNotificationLogId, null, true));

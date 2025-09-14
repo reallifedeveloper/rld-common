@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.reallifedeveloper.common.application.eventstore.EventStore;
@@ -49,6 +50,7 @@ public class NotificationPublisherTaskTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorPublicationChannelNull() {
         TestNotificationService notificationService = new TestNotificationService();
         Exception e = assertThrows(IllegalArgumentException.class, () -> new NotificationPublisherTask(null, notificationService),
@@ -57,6 +59,7 @@ public class NotificationPublisherTaskTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNotificationServiceNull() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> new NotificationPublisherTask(PUBLICATION_CHANNEL, null),
                 "Expected IllegalArgumentException for null notification service");
@@ -67,8 +70,8 @@ public class NotificationPublisherTaskTest {
 
     private static class TestNotificationService extends NotificationService {
 
-        private IOException ioException;
-        private RuntimeException runtimeException;
+        private @Nullable IOException ioException;
+        private @Nullable RuntimeException runtimeException;
         private List<String> publicationChannelsUsed = new ArrayList<>();
 
         TestNotificationService() {
@@ -76,11 +79,11 @@ public class NotificationPublisherTaskTest {
                     new InMemoryPublishedMessageTrackerRepository(), new TestNotificationPublisher());
         }
 
-        public void setIoException(IOException ioException) {
+        void setIoException(IOException ioException) {
             this.ioException = ioException;
         }
 
-        public void setRuntimeException(RuntimeException runtimeException) {
+        void setRuntimeException(RuntimeException runtimeException) {
             this.runtimeException = runtimeException;
         }
 

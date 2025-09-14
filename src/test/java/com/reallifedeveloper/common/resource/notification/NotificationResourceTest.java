@@ -162,6 +162,7 @@ public class NotificationResourceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void getNotificationLogNullNotificationLogString() {
         WebApplicationException exception = Assertions.assertThrows(WebApplicationException.class,
                 () -> resource.getNotificationLog(null, uriInfo));
@@ -184,11 +185,13 @@ public class NotificationResourceTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullNotificationService() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new NotificationResource(null, objectSerializer));
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullObjectSerializer() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new NotificationResource(notificationService, null));
     }

@@ -19,6 +19,7 @@ import com.reallifedeveloper.common.application.notification.NotificationFactory
 import com.reallifedeveloper.common.application.notification.NotificationReader;
 import com.reallifedeveloper.common.domain.ObjectSerializer;
 import com.reallifedeveloper.common.domain.event.AbstractDomainEvent;
+import com.reallifedeveloper.tools.test.TestUtil;
 
 public class GsonNotificationReaderTest {
 
@@ -356,6 +357,7 @@ public class GsonNotificationReaderTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void constructorNullJsonObject() {
         assertThrows(IllegalArgumentException.class, () -> new GsonNotificationReader(null));
     }
@@ -385,21 +387,21 @@ public class GsonNotificationReaderTest {
         private MyColor color = MyColor.CYAN;
 
         TestEvent(long id, String name, double d) {
-            super(ZonedDateTime.now());
+            super(TestUtil.utcNow());
             this.id = id;
             this.name = name;
             this.d = d;
         }
 
-        public static class MyColor {
-            public static final MyColor CYAN = new MyColor(0x00ffff);
+        static class MyColor {
+            static final MyColor CYAN = new MyColor(0x00ffff);
             private int value;
 
             MyColor(int value) {
                 this.value = value;
             }
 
-            public int getRGB() {
+            int getRGB() {
                 return value;
             }
         }

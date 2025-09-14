@@ -18,7 +18,7 @@ implements StoredEventRepository {
     public List<StoredEvent> allEventsSince(long storedEventId) {
         List<StoredEvent> events = new ArrayList<>();
         for (StoredEvent event : findAll()) {
-            if (event.id() > storedEventId) {
+            if (event.id() != null && event.id() > storedEventId) {
                 events.add(event);
             }
         }
@@ -29,7 +29,7 @@ implements StoredEventRepository {
     public List<StoredEvent> allEventsBetween(long firstStoredEventId, long lastStoredEventId) {
         List<StoredEvent> events = new ArrayList<>();
         for (StoredEvent event : findAll()) {
-            if (firstStoredEventId <= event.id() && event.id() <= lastStoredEventId) {
+            if (event.id() != null && firstStoredEventId <= event.id() && event.id() <= lastStoredEventId) {
                 events.add(event);
             }
         }
@@ -43,7 +43,7 @@ implements StoredEventRepository {
         }
         Long lastStoredEventId = -1L;
         for (StoredEvent event : findAll()) {
-            if (event.id() > lastStoredEventId) {
+            if (event.id() != null && event.id() > lastStoredEventId) {
                 lastStoredEventId = event.id();
             }
         }

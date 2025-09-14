@@ -89,6 +89,7 @@ public class Log4jConfiguratorTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void getLogLevelNull() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> configurator.getLogLevel(null));
         assertEquals("loggerName must not be null", e.getMessage());
@@ -122,6 +123,7 @@ public class Log4jConfiguratorTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void setLogLevelNullLoggerName() {
         configurator.setLogLevel(null, EXPECTED_LOG_LEVELS[0]);
         // Verify that no log level has been changed:
@@ -144,6 +146,7 @@ public class Log4jConfiguratorTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void setLogLevelNullLevel() {
         String loggerName = EXPECTED_LOGGERS[0];
         String oldLevel = configurator.getLogLevel(loggerName);

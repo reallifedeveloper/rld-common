@@ -20,6 +20,7 @@ public class ServletContextSystemInfoTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     public void testSetServletContextWithNullContext() {
         ServletContextSystemInfo systemInfo = new ServletContextSystemInfo();
         systemInfo.setServletContext(null);
