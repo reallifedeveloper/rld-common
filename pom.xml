@@ -16,6 +16,10 @@
     <name>RealLifeDeveloper Common</name>
     <description>Common code shared by many RealLifeDeveloper projects.</description>
 
+    <properties>
+        <rld-bom.version>20250920.1</rld-bom.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
