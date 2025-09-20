@@ -38,4 +38,4 @@ For more information, see <https://reallifedeveloper.com/maven-site/rld-common>.
 
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/reallifedeveloper/rld-common/badge)](https://scorecard.dev/viewer/?uri=github.com/reallifedeveloper/rld-common)
-[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/10898/badge)](https://bestpractices.coreinfrastructure.org/projects/10898)
+[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/10935/badge)](https://bestpractices.coreinfrastructure.org/projects/10935)
