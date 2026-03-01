@@ -110,8 +110,7 @@ public abstract class AbstractDomainEvent implements DomainEvent {
      *      Explanation of finalizer attack</a>
      */
     @Override
-    @SuppressWarnings({ "deprecation", "removal", "Finalize", "checkstyle:NoFinalizer", "PMD.EmptyFinalizer",
-            "PMD.EmptyMethodInAbstractClassShouldBeAbstract" })
+    @SuppressWarnings({ "deprecation", "removal", "Finalize", "checkstyle:NoFinalizer" })
     protected final void finalize() throws Throwable {
         // Do nothing
     }

@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.reallifedeveloper</groupId>
         <artifactId>rld-parent</artifactId>
-        <version>23</version>
+        <version>24</version>
     </parent>
 
     <artifactId>rld-common</artifactId>
@@ -15,10 +15,6 @@
 
     <name>RealLifeDeveloper Common</name>
     <description>Common code shared by many RealLifeDeveloper projects.</description>
-
-    <properties>
-        <rld-bom.version>20250920.1</rld-bom.version>
-    </properties>
 
     <dependencies>
         <dependency>

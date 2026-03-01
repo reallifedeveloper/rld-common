@@ -158,7 +158,7 @@ public class NotificationService {
      */
     @Override
     @Deprecated
-    @SuppressWarnings({ "Finalize", "checkstyle:NoFinalizer", "PMD.EmptyFinalizer" })
+    @SuppressWarnings({ "Finalize", "checkstyle:NoFinalizer" })
     protected final void finalize() throws Throwable {
         // Do nothing
     }

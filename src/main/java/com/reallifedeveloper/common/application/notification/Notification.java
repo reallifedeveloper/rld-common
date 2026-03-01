@@ -23,8 +23,6 @@ public record Notification(@Nullable String eventType, Long storedEventId, @Null
 
     /**
      * Creates a new {@code Notification}.
-     *
-     * @throws IllegalArgumentException if {@code event} or {@code storedEventId} is {@code null}
      */
     public Notification {
         ErrorHandling.checkNull("Arguments must not be null: event=%s, storedEventId=%s", event, storedEventId);
