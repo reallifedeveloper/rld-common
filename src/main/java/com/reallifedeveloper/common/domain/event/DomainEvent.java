@@ -1,6 +1,5 @@
 package com.reallifedeveloper.common.domain.event;
 
-import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 import com.reallifedeveloper.common.domain.DomainObject;
@@ -10,7 +9,7 @@ import com.reallifedeveloper.common.domain.DomainObject;
  *
  * @author RealLifeDeveloper
  */
-public interface DomainEvent extends DomainObject<DomainEvent>, Serializable {
+public interface DomainEvent extends DomainObject<DomainEvent> {
 
     /**
      * Gives the time the event occurred.

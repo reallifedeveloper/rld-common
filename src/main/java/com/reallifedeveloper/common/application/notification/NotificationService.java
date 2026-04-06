@@ -149,18 +149,4 @@ public class NotificationService {
             messageTrackerRepository.save(messageTracker);
         }
     }
-
-    /**
-     * Make finalize method final to avoid "Finalizer attacks" and corresponding SpotBugs warning (CT_CONSTRUCTOR_THROW).
-     *
-     * @see <a href="https://wiki.sei.cmu.edu/confluence/display/java/OBJ11-J.+Be+wary+of+letting+constructors+throw+exceptions">
-     *      Explanation of finalizer attack</a>
-     */
-    @Override
-    @Deprecated
-    @SuppressWarnings({ "Finalize", "checkstyle:NoFinalizer" })
-    protected final void finalize() throws Throwable {
-        // Do nothing
-    }
-
 }
