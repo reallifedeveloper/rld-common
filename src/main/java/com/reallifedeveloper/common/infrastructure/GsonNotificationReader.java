@@ -170,7 +170,7 @@ public final class GsonNotificationReader implements NotificationReader {
         }
 
         private static boolean isNull(JsonElement jsonElement) {
-            return jsonElement == null || jsonElement == JsonNull.INSTANCE;
+            return jsonElement == null || jsonElement.equals(JsonNull.INSTANCE);
         }
     }
 }

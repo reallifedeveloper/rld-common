@@ -133,6 +133,7 @@ public final class NotificationResource extends BaseResource {
         private final Optional<Link> previous;
         private final Link[] allLinks;
 
+        @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW", justification = "Warning is about linkList::add, which should not fail")
         /* package-private */ Links(NotificationLog notificationLog, UriInfo uriInfo) {
             UriBuilder uriBuilder = uriInfo.getBaseUriBuilder().path(NotificationResource.class).path(NotificationResource.class,
                     "getNotificationLog");

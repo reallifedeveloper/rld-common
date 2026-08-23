@@ -75,10 +75,14 @@ public class Log4jConfiguratorTest {
 
     @Test
     public void getLogLevel() {
-        for (int i = 0; i < EXPECTED_LOGGERS.length; i++) {
-            String logger = EXPECTED_LOGGERS[i];
+        assertLogLevels(configurator, EXPECTED_LOGGERS, EXPECTED_LOG_LEVELS);
+    }
+
+    private static void assertLogLevels(Log4jConfigurator configurator, String[] expectedLoggers, String[] expectedLogLevels) {
+        for (int i = 0; i < expectedLoggers.length; i++) {
+            String logger = expectedLoggers[i];
             String logLevel = configurator.getLogLevel(logger);
-            assertEquals(EXPECTED_LOG_LEVELS[i], logLevel, "Wrong log level for logger " + logger + ": ");
+            assertEquals(expectedLogLevels[i], logLevel, "Wrong log level for logger " + logger + ": ");
         }
     }
 
@@ -127,14 +131,14 @@ public class Log4jConfiguratorTest {
     public void setLogLevelNullLoggerName() {
         configurator.setLogLevel(null, EXPECTED_LOG_LEVELS[0]);
         // Verify that no log level has been changed:
-        getLogLevel();
+        assertLogLevels(configurator, EXPECTED_LOGGERS, EXPECTED_LOG_LEVELS);
     }
 
     @Test
     public void setLogLevelBlankLoggerName() {
         configurator.setLogLevel("    ", EXPECTED_LOG_LEVELS[0]);
         // Verify that no log level has been changed:
-        getLogLevel();
+        assertLogLevels(configurator, EXPECTED_LOGGERS, EXPECTED_LOG_LEVELS);
     }
 
     @Test
